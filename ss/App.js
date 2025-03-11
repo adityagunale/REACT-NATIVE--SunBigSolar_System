@@ -21,6 +21,7 @@ import LoanDetailsScreen from './screens/ShowLoanDeatails';
 import PaymentProcessScreen from './screens/PaymentScreen';
 import TrackProjectScreen from './screens/TrackProject';
 import GetQuote from './screens/Getquote';
+import QuoteResult from './screens/QuoteResult';
 
 
 
@@ -48,6 +49,7 @@ const App = () => {
       <Stack.Screen name='Payment' component={PaymentProcessScreen} options={{headerShown:false}}/>
       <Stack.Screen name='Track Project' component={TrackProjectScreen} options={{headerShown:false}}/>
       <Stack.Screen name='Quote' component={GetQuote} options={{headerShown:false}}/>
+      <Stack.Screen name='QuoteResult' component={QuoteResult} options={{headerShown:false}}/>
      </Stack.Navigator>
      </NavigationContainer>
    

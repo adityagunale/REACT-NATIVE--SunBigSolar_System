@@ -766,3 +766,132 @@ app.get('/project-status', (req, res) => {
     ];
     res.json(projectStatus);
 });
+
+// Endpoint for solar quote calculation
+app.post('/calculate-solar-quote', authenticateToken, async (req, res) => {
+    try {
+        const {
+            connectionType,
+            contractLoad,
+            monthlyUnits,
+            selectedCity,
+            roofArea,
+            areaUnit
+        } = req.body;
+
+        // Validate required fields
+        if (!connectionType || !contractLoad || !monthlyUnits || !selectedCity || !roofArea) {
+            return res.status(400).json({
+                success: false,
+                message: 'All fields are required',
+                missingFields: Object.entries({
+                    connectionType,
+                    contractLoad,
+                    monthlyUnits,
+                    selectedCity,
+                    roofArea
+                }).filter(([_, value]) => !value).map(([key]) => key)
+            });
+        }
+
+        // Convert roof area to square meters if needed
+        let roofAreaInSqM = areaUnit === 'sq. ft' ? roofArea * 0.092903 : roofArea;
+
+        // Calculate solar system size based on monthly units
+        // Assuming average daily sunlight hours of 5.5 and system efficiency of 75%
+        const dailyUnits = monthlyUnits / 30;
+        const systemSize = (dailyUnits * 1000) / (5.5 * 0.75); // in watts
+
+        // Calculate number of panels needed (assuming 400W panels)
+        const numberOfPanels = Math.ceil(systemSize / 400);
+
+        // Calculate required roof area (assuming 1.6 sqm per panel)
+        const requiredRoofArea = numberOfPanels * 1.6;
+
+        // Check if roof area is sufficient
+        const isRoofAreaSufficient = roofAreaInSqM >= requiredRoofArea;
+
+        // Calculate estimated cost (assuming ₹40 per watt)
+        const estimatedCost = systemSize * 40;
+
+        // Calculate annual savings (assuming 30% reduction in electricity bill)
+        const annualSavings = (monthlyUnits * 12 * 8) * 0.3; // Assuming ₹8 per unit
+
+        // Calculate payback period in years
+        const paybackPeriod = estimatedCost / annualSavings;
+
+        // Calculate carbon offset (assuming 0.7 kg CO2 per kWh)
+        const annualCarbonOffset = (monthlyUnits * 12) * 0.7;
+
+        // Prepare response
+        const quoteDetails = {
+            systemSize: Math.round(systemSize / 1000 * 10) / 10, // in kW
+            numberOfPanels,
+            requiredRoofArea: Math.round(requiredRoofArea * 10) / 10,
+            isRoofAreaSufficient,
+            estimatedCost: Math.round(estimatedCost),
+            annualSavings: Math.round(annualSavings),
+            paybackPeriod: Math.round(paybackPeriod * 10) / 10,
+            annualCarbonOffset: Math.round(annualCarbonOffset),
+            city: selectedCity,
+            connectionType,
+            contractLoad: parseFloat(contractLoad),
+            monthlyUnits: parseFloat(monthlyUnits),
+            roofArea: parseFloat(roofArea),
+            areaUnit
+        };
+
+        // Save quote details to user's profile if needed
+        const userId = req.user.userId;
+        await User.findByIdAndUpdate(userId, {
+            $push: {
+                solarQuotes: {
+                    ...quoteDetails,
+                    createdAt: new Date()
+                }
+            }
+        });
+
+        res.status(200).json({
+            success: true,
+            message: 'Solar quote calculated successfully',
+            data: quoteDetails
+        });
+
+    } catch (error) {
+        console.error('Error calculating solar quote:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+});
+
+// Endpoint to fetch user's solar quote history
+app.get('/solar-quotes', authenticateToken, async (req, res) => {
+    try {
+        const userId = req.user.userId;
+        const user = await User.findById(userId).select('solarQuotes');
+
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'User not found'
+            });
+        }
+
+        res.status(200).json({
+            success: true,
+            data: user.solarQuotes || []
+        });
+
+    } catch (error) {
+        console.error('Error fetching solar quotes:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Internal server error',
+            error: error.message
+        });
+    }
+});

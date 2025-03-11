@@ -1,21 +1,22 @@
 import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet, StatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, StyleSheet, StatusBar, Alert, ActivityIndicator } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const Getquote = () => {
   const navigation = useNavigation();
   const [connectionType, setConnectionType] = useState('Residential');
   const [contractLoad, setContractLoad] = useState('');
-  const [connectionPhase, setConnectionPhase] = useState('Three-Phase');
   const [monthlyUnits, setMonthlyUnits] = useState('');
-  const [monthlyBill, setMonthlyBill] = useState('');
   const [selectedCity, setSelectedCity] = useState('Mumbai City');
   const [roofArea, setRoofArea] = useState('');
   const [areaUnit, setAreaUnit] = useState('sq. m');
+  const [loading, setLoading] = useState(false);
+  const [quoteResult, setQuoteResult] = useState(null);
 
   // List of all 36 districts in Maharashtra
   const maharashtraDistricts = [
@@ -27,9 +28,57 @@ const Getquote = () => {
     'Sindhudurg', 'Solapur', 'Thane', 'Wardha', 'Washim', 'Yavatmal'
   ];
 
-  const handleCheckSavings = () => {
-    console.log('Checking savings...');
-    // Calculation logic would go here
+  const handleCheckSavings = async () => {
+    try {
+      setLoading(true);
+      
+      // Validate inputs
+      if (!contractLoad || !monthlyUnits || !roofArea) {
+        Alert.alert('Error', 'Please fill in all required fields');
+        return;
+      }
+
+      // Get auth token
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        Alert.alert('Error', 'Please login to continue');
+        navigation.navigate('Login');
+        return;
+      }
+
+      // Make API call
+      const response = await fetch('http://192.168.43.42:8000/calculate-solar-quote', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          connectionType,
+          contractLoad: parseFloat(contractLoad),
+          monthlyUnits: parseFloat(monthlyUnits),
+          selectedCity,
+          roofArea: parseFloat(roofArea),
+          areaUnit
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to calculate quote');
+      }
+
+      setQuoteResult(data.data);
+      
+      // Navigate to results screen with the quote data
+      navigation.navigate('QuoteResult', { quoteData: data.data });
+
+    } catch (error) {
+      Alert.alert('Error', error.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -65,27 +114,10 @@ const Getquote = () => {
                     <Text style={styles.inputLabel}>Connection Type</Text>
                     <View style={styles.buttonGroup}>
                       <TouchableOpacity 
-                        style={[styles.button, connectionType === 'Residential' ? styles.buttonActive : styles.buttonInactive]}
-                        onPress={() => setConnectionType('Residential')}
+                        style={[styles.button, styles.buttonActive]}
                       >
-                        <Text style={connectionType === 'Residential' ? styles.buttonTextActive : styles.buttonTextInactive}>
+                        <Text style={styles.buttonTextActive}>
                           Residential
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity 
-                        style={[styles.button, connectionType === 'Commercial' ? styles.buttonActive : styles.buttonInactive]}
-                        onPress={() => setConnectionType('Commercial')}
-                      >
-                        <Text style={connectionType === 'Commercial' ? styles.buttonTextActive : styles.buttonTextInactive}>
-                          Commercial
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity 
-                        style={[styles.button, connectionType === 'Industrial' ? styles.buttonActive : styles.buttonInactive]}
-                        onPress={() => setConnectionType('Industrial')}
-                      >
-                        <Text style={connectionType === 'Industrial' ? styles.buttonTextActive : styles.buttonTextInactive}>
-                          Industrial
                         </Text>
                       </TouchableOpacity>
                     </View>
@@ -115,30 +147,6 @@ const Getquote = () => {
                     </View>
                   </View>
                 </View>
-
-                <View style={styles.inputGroup}>
-                  <View style={styles.inputWrapper}>
-                    <Text style={styles.inputLabel}>Connection Phase</Text>
-                    <View style={styles.buttonGroup}>
-                      <TouchableOpacity 
-                        style={[styles.button, connectionPhase === 'Three-Phase' ? styles.buttonActive : styles.buttonInactive]}
-                        onPress={() => setConnectionPhase('Three-Phase')}
-                      >
-                        <Text style={connectionPhase === 'Three-Phase' ? styles.buttonTextActive : styles.buttonTextInactive}>
-                          Three-Phase
-                        </Text>
-                      </TouchableOpacity>
-                      <TouchableOpacity 
-                        style={[styles.button, connectionPhase === 'Single-Phase' ? styles.buttonActive : styles.buttonInactive]}
-                        onPress={() => setConnectionPhase('Single-Phase')}
-                      >
-                        <Text style={connectionPhase === 'Single-Phase' ? styles.buttonTextActive : styles.buttonTextInactive}>
-                          Single-Phase
-                        </Text>
-                      </TouchableOpacity>
-                    </View>
-                  </View>
-                </View>
               </View>
             </View>
 
@@ -164,29 +172,6 @@ const Getquote = () => {
                       placeholderTextColor={'#0a1172'}
                     />
                     <Text style={styles.unitLabel}>KW</Text>
-                  </View>
-                </View>
-
-                <View style={styles.divider}>
-                  <Text style={styles.dividerText}>OR</Text>
-                  <Text style={styles.dividerSubtext}>
-                    If you don't know your unit consumption,{'\n'}
-                    enter your monthly electricity bill value
-                  </Text>
-                </View>
-
-                <View style={styles.inputGroup}>
-                  <View style={styles.inputWrapper}>
-                    <Text style={styles.inputLabel}>Monthly Bill</Text>
-                    <TextInput 
-                      style={styles.input}
-                      placeholder="Enter Monthly Bill" 
-                      value={monthlyBill}
-                      onChangeText={setMonthlyBill}
-                      keyboardType="numeric"
-                      placeholderTextColor={'#0a1172'}
-                    />
-                    <Text style={styles.unitLabel}>INR</Text>
                   </View>
                 </View>
               </View>
@@ -259,10 +244,15 @@ const Getquote = () => {
 
             {/* Check Savings Button */}
             <TouchableOpacity 
-              style={styles.loanButton}
+              style={[styles.loanButton, loading && styles.loanButtonDisabled]}
               onPress={handleCheckSavings}
+              disabled={loading}
             >
-              <Text style={styles.ButtonText}>Check my Savings</Text>
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.ButtonText}>Check my Savings</Text>
+              )}
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -467,6 +457,9 @@ const styles = StyleSheet.create({
     marginTop: 30,
     marginBottom: 20,
     width: '100%'
+  },
+  loanButtonDisabled: {
+    opacity: 0.7,
   },
   ButtonText: {
     color: 'white',
