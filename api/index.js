@@ -444,10 +444,6 @@ app.get("/files", authenticateToken, async (req, res) => {
     }
   });
   
-  
-
-
-
 // Get files by type
 app.get("/files/type/:fileType", authenticateToken, async (req, res) => {
     try {
@@ -841,7 +837,7 @@ app.post('/calculate-solar-quote', authenticateToken, async (req, res) => {
             areaUnit
         };
 
-        // Save quote details to user's profile if needed
+        // Save quote details to user's profile 
         const userId = req.user.userId;
         await User.findByIdAndUpdate(userId, {
             $push: {

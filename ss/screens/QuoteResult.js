@@ -118,41 +118,91 @@ const QuoteResult = () => {
 
   const environmentalImpact = calculateEnvironmentalImpact();
 
-  // Monthly generation data with dynamic values
-  const monthlyData = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-    datasets: [{
-      data: [
-        Math.round(quoteData.systemSize * 120), // Winter months
-        Math.round(quoteData.systemSize * 130),
-        Math.round(quoteData.systemSize * 150),
-        Math.round(quoteData.systemSize * 180),
-        Math.round(quoteData.systemSize * 200),
-        Math.round(quoteData.systemSize * 180),
-        Math.round(quoteData.systemSize * 150),
-        Math.round(quoteData.systemSize * 140),
-        Math.round(quoteData.systemSize * 160),
-        Math.round(quoteData.systemSize * 170),
-        Math.round(quoteData.systemSize * 140),
-        Math.round(quoteData.systemSize * 130)
-      ],
-    }]
+  // Calculate monthly generation based on system size and seasonal factors
+  const calculateMonthlyGeneration = () => {
+    // Monthly generation factors (percentage of peak generation)
+    const monthlyFactors = {
+      // Winter months (lower generation)
+      'Jan': 0.65, 'Feb': 0.70, 'Mar': 0.85, 'Apr': 0.90, 'May': 1.00, 'Jun': 0.95, 'Jul': 0.90, 'Aug': 0.85, 'Sep': 0.85, 'Oct': 0.80, 'Nov': 0.75, 'Dec': 0.65,
+      // Spring/Autumn months (moderate generation)
+       
+      // Summer months (peak generation)
+       
+    };
+
+    // Base daily generation for 1 kWp system (around 4-5 units per day)
+    const baseMonthlyGeneration = quoteData.systemSize * 30 * 4.5; // 4.5 units per day average
+
+    return {
+      labels: Object.keys(monthlyFactors),
+      datasets: [{
+        data: Object.values(monthlyFactors).map(factor => 
+          Math.round(baseMonthlyGeneration * factor)
+        )
+      }]
+    };
   };
 
-  // Calculate monthly average and total
+  const monthlyData = calculateMonthlyGeneration();
   const monthlyAverage = Math.round(monthlyData.datasets[0].data.reduce((a, b) => a + b, 0) / 12);
   const totalGeneration = monthlyData.datasets[0].data.reduce((a, b) => a + b, 0);
 
-  // 25 Year savings data with dynamic values
+  // Calculate 25 year savings with annual increase
+  const calculate25YearSavings = () => {
+    const annualIncrease = 0.05; // 5% annual increase in electricity tariff
+    let totalSavings = 0;
+    const yearLabels = ['2', '4', '6', '8', '10', '13', '16', '19', '22', '25'];
+    const savingsData = yearLabels.map(year => {
+      const yearNum = parseInt(year);
+      let yearSavings = 0;
+      
+      // Calculate compounded savings up to this year
+      for(let i = 1; i <= yearNum; i++) {
+        yearSavings += quoteData.annualSavings * Math.pow(1 + annualIncrease, i - 1);
+      }
+      
+      if (yearNum === 25) {
+        totalSavings = Math.round(yearSavings);
+      }
+      return Math.round(yearSavings);
+    });
+
+    return {
+      data: savingsData,
+      total: totalSavings,
+      labels: yearLabels
+    };
+  };
+
   const yearlyData = {
-    labels: ['2', '4', '6', '8', '10', '13', '16', '19', '22', '25'],
+    labels: calculate25YearSavings().labels,
     datasets: [{
-      data: Array.from({ length: 10 }, (_, i) => {
-        const year = [2, 4, 6, 8, 10, 13, 16, 19, 22, 25][i];
-        return Math.round(quoteData.annualSavings * year);
-      }),
+      data: calculate25YearSavings().data
     }]
   };
+
+  const totalSavings = calculate25YearSavings().total;
+
+  // Calculate system size percentage (assuming max recommended size is 10 kWp for residential)
+  const calculateSystemSizePercentage = () => {
+    const maxRecommendedSize = 10; // 10 kWp as maximum recommended size
+    const percentage = (quoteData.systemSize / maxRecommendedSize) * 100;
+    return Math.min(percentage, 100); // Cap at 100%
+  };
+
+  // Calculate before and after solar savings
+  const calculateSavingsData = () => {
+    const annualBill = quoteData.annualSavings * 1.5; // Before solar bill (assuming savings is 40% of original bill)
+    const afterSolarBill = annualBill - quoteData.annualSavings; // Bill after solar savings
+    
+    return {
+      beforeSolar: annualBill,
+      afterSolar: afterSolarBill,
+      percentageReduction: ((annualBill - afterSolarBill) / annualBill) * 100
+    };
+  };
+
+  const savingsData = calculateSavingsData();
 
   return (
     <>
@@ -184,7 +234,7 @@ const QuoteResult = () => {
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>Number of <Text style={{fontWeight:500, color:'#0a1172'}}>Panels</Text></Text>
                   <View style={{flexDirection:'row', alignItems:'center', gap:5, marginLeft:10, marginTop:5}}>
-                    <Icon name="chevron-right" size={16} color="white" backgroundColor="#0a1172" padding={5} borderRadius={12} width={30} style={{textAlign: 'center'}} />
+                    <Icon name="chevron-right" size={16} color="white" backgroundColor="#0a1172" padding={5} borderRadius={12} width={30} style={{textAlign: 'center'}} marginTop={8} />
                     <Text style={styles.detailValue}>{quoteData.numberOfPanels}</Text>
                     <TouchableOpacity onPress={() => setActiveTooltip('panels')} style={{marginLeft: 'auto'}}>
                       <Icon name="info-circle" size={26} color="#425578" />
@@ -194,7 +244,7 @@ const QuoteResult = () => {
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>Number of <Text style={{fontWeight:500, color:'#0a1172'}}>Inverters</Text> </Text>
                   <View style={{flexDirection:'row', alignItems:'center', gap:5, marginLeft:10, marginTop:5}}>
-                    <Icon name="chevron-right" size={16} color="white" backgroundColor="#0a1172" padding={5} borderRadius={12} width={30} style={{textAlign: 'center'}} />
+                    <Icon name="chevron-right" size={16} color="white" backgroundColor="#0a1172" padding={5} borderRadius={12} width={30} style={{textAlign: 'center'}} marginTop={8} />
                     <Text style={styles.detailValue}>1</Text>
                     <TouchableOpacity onPress={() => setActiveTooltip('inverters')} style={{marginLeft: 'auto'}}>
                       <Icon name="info-circle" size={26} color="#425578" />
@@ -204,7 +254,7 @@ const QuoteResult = () => {
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>1st Year <Text style={{fontWeight:500, color:'#0a1172'}}>Generation</Text></Text>
                   <View style={{flexDirection:'row', alignItems:'center', gap:5, marginLeft:10, marginTop:5}}>
-                    <Icon name="chevron-right" size={16} color="white" backgroundColor="#0a1172" padding={5} borderRadius={12} width={30} style={{textAlign: 'center'}} />
+                    <Icon name="chevron-right" size={16} color="white" backgroundColor="#0a1172" padding={5} borderRadius={12} width={30} style={{textAlign: 'center'}} marginTop={8} />
                     <Text style={styles.detailValue}>{Math.round(quoteData.systemSize * 1500)} kWh</Text>
                     <TouchableOpacity onPress={() => setActiveTooltip('firstYear')} style={{marginLeft: 'auto'}}>
                       <Icon name="info-circle" size={26} color="#425578" />
@@ -214,7 +264,7 @@ const QuoteResult = () => {
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>25 Years <Text style={{fontWeight:500, color:'#0a1172'}}>Generation</Text></Text>
                   <View style={{flexDirection:'row', alignItems:'center', gap:5, marginLeft:10, marginTop:5}}>
-                    <Icon name="chevron-right" size={16} color="white" backgroundColor="#0a1172" padding={5} borderRadius={12} width={30} style={{textAlign: 'center'}} />
+                    <Icon name="chevron-right" size={16} color="white" backgroundColor="#0a1172" padding={5} borderRadius={12} width={30} style={{textAlign: 'center'}} marginTop={8} />
                     <Text style={styles.detailValue}>{Math.round(quoteData.systemSize * 1500 * 25)} kWh</Text>
                     <TouchableOpacity onPress={() => setActiveTooltip('twentyFiveYears')} style={{marginLeft: 'auto'}}>
                       <Icon name="info-circle" size={26} color="#425578" />
@@ -234,19 +284,17 @@ const QuoteResult = () => {
                 <View style={{backgroundColor: '#e8e8e8', padding: 15, borderRadius: 19, marginBottom: -5, justifyContent:'space-between', width:'70%'}}>
                   <Text style={styles.systemSizeValue}>{quoteData.systemSize}        kWp</Text>
                 </View>
-                {/* <Text style={styles.systemSizeUnit}>kWp</Text> */}
                 <View style={styles.circleContainer}>
                   <AnimatedCircularProgress
                     size={220}
                     width={38}
-                    fill={85.95}
+                    fill={calculateSystemSizePercentage()}
                     tintColor="#FFA500"
                     backgroundColor="#0a1172"
-
                   >
                     {(fill) => (
                       <Text style={styles.circleText}>
-                        Solar{'\n'}{fill}%
+                        Solar{'\n'}{fill.toFixed(1)}%
                       </Text>
                     )}
                   </AnimatedCircularProgress>
@@ -265,7 +313,7 @@ const QuoteResult = () => {
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>System <Text style={{fontWeight:500, color:'#0a1172'}}>Cost</Text></Text>
                   <View style={{flexDirection:'row', alignItems:'center', gap:5, marginLeft:10}}>
-                    <Icon name="chevron-right" size={16} color="white" backgroundColor="#0a1172" padding={5} borderRadius={12} width={30} style={{textAlign: 'center'}} />
+                    <Icon name="chevron-right" size={16} color="white" backgroundColor="#0a1172" padding={5} borderRadius={12} width={30} style={{textAlign: 'center'}} marginTop={8} />
                     <Text style={styles.detailValue}>{formatCurrency(quoteData.estimatedCost)}</Text>
                     <TouchableOpacity onPress={() => setActiveTooltip('systemCost')} style={{marginLeft: 'auto'}}>
                       <Icon name="info-circle" size={26} color="#425578" />
@@ -275,7 +323,7 @@ const QuoteResult = () => {
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>Yearly O&M <Text style={{fontWeight:500, color:'#0a1172'}}>Cost</Text></Text>
                   <View style={{flexDirection:'row', alignItems:'center', gap:5, marginLeft:10}}>
-                    <Icon name="chevron-right" size={16} color="white" backgroundColor="#0a1172" padding={5} borderRadius={12} width={30} style={{textAlign: 'center'}} />
+                    <Icon name="chevron-right" size={16} color="white" backgroundColor="#0a1172" padding={5} borderRadius={12} width={30} style={{textAlign: 'center'}} marginTop={8} />
                     <Text style={styles.detailValue}>{formatCurrency(quoteData.estimatedCost * 0.01)}</Text>
                     <TouchableOpacity onPress={() => setActiveTooltip('omCost')} style={{marginLeft: 'auto'}}>
                       <Icon name="info-circle" size={26} color="#425578" />
@@ -285,7 +333,7 @@ const QuoteResult = () => {
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>25 Years <Text style={{fontWeight:500, color:'#0a1172'}}>Savings</Text></Text>
                   <View style={{flexDirection:'row', alignItems:'center', gap:5, marginLeft:10}}>
-                    <Icon name="chevron-right" size={16} color="white" backgroundColor="#0a1172" padding={5} borderRadius={12} width={30} style={{textAlign: 'center'}} />
+                    <Icon name="chevron-right" size={16} color="white" backgroundColor="#0a1172" padding={5} borderRadius={12} width={30} style={{textAlign: 'center'}} marginTop={8} />
                     <Text style={styles.detailValue}>{formatCurrency(quoteData.annualSavings * 25)}</Text>
                     <TouchableOpacity onPress={() => setActiveTooltip('savings')} style={{marginLeft: 'auto'}}>
                       <Icon name="info-circle" size={26} color="#425578" />
@@ -295,7 +343,7 @@ const QuoteResult = () => {
                 <View style={styles.detailRow}>
                   <Text style={styles.detailLabel}>Payback <Text style={{fontWeight:500, color:'#0a1172'}}>Time</Text></Text>
                   <View style={{flexDirection:'row', alignItems:'center', gap:5, marginLeft:10}}>
-                    <Icon name="chevron-right" size={16} color="white" backgroundColor="#0a1172" padding={5} borderRadius={12} width={30} style={{textAlign: 'center'}} />
+                    <Icon name="chevron-right" size={16} color="white" backgroundColor="#0a1172" padding={5} borderRadius={12} width={30} style={{textAlign: 'center'}} marginTop={8} />
                     <Text style={styles.detailValue}>{quoteData.paybackPeriod} years</Text>
                     <TouchableOpacity onPress={() => setActiveTooltip('payback')} style={{marginLeft: 'auto'}}>
                       <Icon name="info-circle" size={26} color="#425578" />
@@ -318,13 +366,24 @@ const QuoteResult = () => {
                   <View style={styles.barContainer}>
                     <View style={styles.bar}>
                       <View style={[styles.barFill, styles.beforeBar]} />
+                      <Text style={styles.barValue}>{formatCurrency(savingsData.beforeSolar)}</Text>
                       <Text style={styles.barLabel}>Before Solar</Text>
                     </View>
                     <View style={styles.bar}>
-                      <View style={[styles.barFill, styles.afterBar]} />
+                      <View 
+                        style={[
+                          styles.barFill, 
+                          styles.afterBar,
+                          { height: `${(savingsData.afterSolar / savingsData.beforeSolar) * 100}%` }
+                        ]} 
+                      />
+                      <Text style={styles.barValue}>{formatCurrency(savingsData.afterSolar)}</Text>
                       <Text style={styles.barLabel}>After Solar</Text>
                     </View>
                   </View>
+                  <Text style={styles.savingsPercentage}>
+                    {savingsData.percentageReduction.toFixed(1)}% reduction in electricity bill
+                  </Text>
                 </View>
               </View>
             </View>
@@ -336,8 +395,8 @@ const QuoteResult = () => {
                 <Text style={styles.cardTitle}>1st Year Generation Graph</Text>
               </View>
               <View style={styles.cardContent}>
-                <Text style={styles.graphLabel}>Monthly average: {monthlyAverage} kWh</Text>
-                <Text style={styles.graphLabel}>Total: {totalGeneration} kWh produced</Text>
+                <Text style={styles.graphLabel}>Monthly average: {formatNumber(monthlyAverage)} kWh</Text>
+                <Text style={styles.graphLabel}>Total: {formatNumber(totalGeneration)} kWh produced</Text>
                 <LineChart
                   data={monthlyData}
                   width={Dimensions.get('window').width - 60}
@@ -348,7 +407,7 @@ const QuoteResult = () => {
                     backgroundGradientTo: '#fff',
                     decimalPlaces: 0,
                     color: (opacity = 1) => `rgba(255, 165, 0, ${opacity})`,
-                    labelColor: (opacity = 1) => `rgba(102, 102, 102, ${opacity})`,
+                    labelColor: (opacity = 1) => `rgba(10, 17, 114, ${opacity})`,
                     style: {
                       borderRadius: 16,
                     },
@@ -362,7 +421,7 @@ const QuoteResult = () => {
                     },
                     yAxisSuffix: ' kWh',
                     yAxisInterval: 1,
-                    formatYLabel: (value) => Math.round(value).toString(),
+                    formatYLabel: (value) => formatNumber(Math.round(value)),
                     formatXLabel: (value) => value.toString(),
                     xAxisLabel: 'Months',
                     yAxisLabel: 'Generation',
@@ -371,7 +430,7 @@ const QuoteResult = () => {
                   bezier
                   style={{
                     marginVertical: 8,
-                    marginTop:40,
+                    marginTop: 40,
                     borderRadius: 16,
                     paddingRight: 35,
                     paddingBottom: 0
@@ -387,7 +446,8 @@ const QuoteResult = () => {
                 <Text style={styles.cardTitle}>25 Year Savings Graph</Text>
               </View>
               <View style={styles.cardContent}>
-                <Text style={styles.graphLabel}>Total: {formatCurrency(3338283)} savings</Text>
+                <Text style={styles.graphLabel}>Total: {formatCurrency(totalSavings)} savings</Text>
+                <Text style={styles.graphLabel}>With 5% annual tariff increase</Text>
                 <BarChart
                   data={yearlyData}
                   width={Dimensions.get('window').width - 60}
@@ -398,26 +458,28 @@ const QuoteResult = () => {
                     backgroundGradientTo: '#fff',
                     decimalPlaces: 0,
                     color: (opacity = 1) => `rgba(10, 17, 114, ${opacity})`,
-                    fillShadowGradient: 'rgba(10, 17, 114, 1)',
+                    fillShadowGradient: '#0a1172',
                     fillShadowGradientOpacity: 1,
-                    fillShadowGradientFrom: 'rgba(10, 17, 114, 1)', // Set the bottom color
-                    fillShadowGradientTo: 'rgba(149, 144, 218, 1)',   // Set the top color to be the same
-                    labelColor: (opacity = 1) => `rgba(102, 102, 102, ${opacity})`,
+                    fillShadowGradientFrom: '#0a1172',
+                    fillShadowGradientTo: '#0a1172',
+                    labelColor: (opacity = 1) => `rgba(10, 17, 114, ${opacity})`,
                     style: {
                       borderRadius: 16,
                     },
                     barPercentage: 0.6,
                     propsForLabels: {
                       fontSize: 12
-                    }
+                    },
+                    formatYLabel: (value) => formatCurrency(value),
                   }}
                   style={{
                     marginVertical: 8,
-                    marginTop:50,
+                    marginTop: 50,
                     borderRadius: 16,
-                    paddingRight: 52,
-                   marginBottom:-15
+                    paddingRight: 68,
+                    marginBottom: -15
                   }}
+                  showBarTops={false}
                 />
               </View>
             </View>
@@ -606,24 +668,26 @@ const styles = StyleSheet.create({
   },
   circleText: {
     textAlign: 'center',
-    fontSize: 16,
+    fontSize: 20,
     color: '#0a1172',
   },
   systemSizeLabel: {
-    fontSize: 12,
-    color: '#666',
+    fontSize: 20,
+    color: 'Black',
     textAlign: 'center',
     marginTop: 10,
   },
   savingsValue: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#0a1172',
   },
   savingsLabel: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
+    fontSize: 15,
+    color: 'black',
+   
+    marginTop: 2,
+    marginBottom:30
   },
   barChart: {
     width: '100%',
@@ -631,15 +695,16 @@ const styles = StyleSheet.create({
   },
   barContainer: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    justifyContent: 'space-evenly',
     height: 250,
-    marginTop: 25
+    marginTop: 25,
   },
   bar: {
-    width: '20%',
+    width: '22%',
     height: '100%',
     justifyContent: 'flex-end',
     alignItems: 'center',
+    position: 'relative',
   },
   barFill: {
     width: '100%',
@@ -647,16 +712,32 @@ const styles = StyleSheet.create({
   },
   beforeBar: {
     backgroundColor: '#0a1172',
-    height: '100%',
+    height: '90%',
   },
   afterBar: {
     backgroundColor: '#FFA500',
-    height: '70%',
+   
   },
   barLabel: {
-    fontSize: 13,
-    color: '#666',
-    marginTop: 8,
+    fontSize: 14,
+    color: 'black',
+    fontWeight: 500,
+    marginTop: 2,
+  },
+  barValue: {
+    fontSize: 16,
+    color: '#0a1172',
+    fontWeight: 'bold',
+    marginBottom: 2,
+    textAlign: 'center',
+    marginTop:10
+  },
+  savingsPercentage: {
+    fontSize: 18,
+    color: '#0a1172',
+    fontWeight: '600',
+    textAlign: 'center',
+    marginTop: 25,
   },
   buttonContainer: {
     marginTop: 20,
@@ -688,8 +769,8 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   graphLabel: {
-    fontSize: 14,
-    color: '#666',
+    fontSize: 15,
+    color: 'black',
     marginBottom: 5,
   },
   chart: {
