@@ -2,7 +2,7 @@
 
 A React Native project created using the React Native CLI.
 
-## Installation
+
 
 1. Clone the repository:
 ```bash
