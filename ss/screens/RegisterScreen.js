@@ -5,10 +5,12 @@ import {
   Text, 
   StyleSheet, 
   TouchableOpacity,
+  ScrollView,
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import axios from "axios";
+import config from '../config';
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
@@ -64,7 +66,7 @@ const RegisterScreen = () => {
       password: password,
     };
 
-    axios.post("http://192.168.43.42:8000/register", user)
+    axios.post(`${config.getApiUrl()}/register`, user)
       .then((response) => {
         console.log(response);
         navigation.navigate("Login"); // Navigate to Login screen after successful registration
@@ -86,67 +88,80 @@ const RegisterScreen = () => {
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
     >
-      <View style={styles.white}>
-        <Text style={styles.title}>Sign Up</Text>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.white}>
+          <Text style={styles.title}>Sign Up</Text>
 
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Name</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Name"
-            value={name}
-            onChangeText={setName}
-          />
+          <View style={styles.inputGroup}>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>Name</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter Name"
+                value={name}
+                onChangeText={setName}
+              />
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>Email</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter Email"
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>Mobile Number</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter Mobile Number"
+                value={tele}
+                onChangeText={setTele}
+                keyboardType="phone-pad"
+              />
+            </View>
+          </View>
+
+          <View style={styles.inputGroup}>
+            <View style={styles.inputWrapper}>
+              <Text style={styles.inputLabel}>Password</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter Password"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+            </View>
+          </View>
+
+          {errorMessage ? (
+            <Text style={styles.errorText}>{errorMessage}</Text>
+          ) : null}
+
+          <TouchableOpacity style={styles.button} onPress={handleRegister}>
+            <Text style={styles.buttonText}>Sign Up</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity style={styles.signupPrompt} onPress={handleLogin}>
+            <Text style={styles.signupText}>
+              Already registered? <Text style={styles.signupLink}>Log In</Text>
+            </Text>
+          </TouchableOpacity>
         </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Email"
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
-            autoCapitalize="none"
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Mobile Number</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Mobile Number"
-            value={tele}
-            onChangeText={setTele}
-            keyboardType="phone-pad"
-          />
-        </View>
-
-        <View style={styles.inputGroup}>
-          <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter Password"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-        </View>
-
-        {errorMessage ? (
-          <Text style={styles.errorText}>{errorMessage}</Text>
-        ) : null}
-
-        <TouchableOpacity style={styles.button} onPress={handleRegister}>
-          <Text style={styles.buttonText}>Sign Up</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity style={styles.signupPrompt} onPress={handleLogin}>
-          <Text style={styles.signupText}>
-            Already registered? <Text style={styles.signupLink}>Log In</Text>
-          </Text>
-        </TouchableOpacity>
-      </View>
+      </ScrollView>
     </LinearGradient>
   );
 };
@@ -155,6 +170,10 @@ const styles = StyleSheet.create({
   blue: {
     flex: 1,
     width: '100%',
+  },
+  scrollContent: {
+    flexGrow: 1,
+    marginBottom:60
   },
   white: {
     backgroundColor: '#ECEDFF',
@@ -178,19 +197,22 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 20,
   },
-  label: {
-    color: '#0a1172',
-    marginBottom: 8,
-    fontWeight: '500',
-  },
-  input: {
-    width: '100%',
-    padding: 15,
+  inputWrapper: {
+    backgroundColor: 'white',
+    borderRadius: 15,
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    borderRadius: 12,
-    fontSize: 16,
-    backgroundColor: 'white',
+    padding: 15,
+  },
+  inputLabel: {
+    color: '#0a1172',
+    fontSize: 18,
+    fontWeight: '900',
+    marginBottom: 5,
+  },
+  input: {
+    padding: 0,
+    fontSize: 15
   },
   errorText: {
     color: 'red',

@@ -16,6 +16,7 @@ import { launchImageLibrary } from 'react-native-image-picker';
 import DocumentPicker from 'react-native-document-picker';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import config from '../config';
 
 
 const Upload = () => {
@@ -71,7 +72,7 @@ const Upload = () => {
   
       console.log(`Uploading ${documentType} with token: ${token}`);
   
-      const response = await axios.post('http://192.168.43.42:8000/upload', formData, {
+      const response = await axios.post(`${config.getApiUrl()}/upload`, formData, {
         headers: { 
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}` // Ensure there's a space after Bearer

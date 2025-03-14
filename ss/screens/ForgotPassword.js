@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, ScrollView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
+import config from '../config';
 
 const ForgotPassword = () => {
   const navigation = useNavigation();
@@ -21,7 +22,7 @@ const ForgotPassword = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://192.168.43.42:8000/request-reset-password', {
+      const response = await fetch(`${config.getApiUrl()}/request-reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +69,7 @@ const ForgotPassword = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('http://192.168.43.42:8000/reset-password', {
+      const response = await fetch(`${config.getApiUrl()}/reset-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -119,70 +120,83 @@ const ForgotPassword = () => {
         end={{x: 1, y: 0}}
         style={styles.gradient}
       >
-        <View style={styles.white}>
-          <Text style={styles.title}>Forgot Password</Text>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.white}>
+            <Text style={styles.title}>Forgot Password</Text>
 
-          {step === 1 && (
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Email Address</Text>
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Enter your email"
-                keyboardType="email-address"
-              />
-              <TouchableOpacity style={styles.resetButton} onPress={requestResetCode}>
-                <Text style={styles.resetButtonText}>Request Reset Code</Text>
-              </TouchableOpacity>
-            </View>
-          )}
-
-          {step === 2 && (
-            <>
+            {step === 1 && (
               <View style={styles.inputGroup}>
-                <Text style={styles.label}>Reset Code</Text>
-                <TextInput
-                  style={styles.input}
-                  value={resetCode}
-                  onChangeText={setResetCode}
-                  placeholder="Enter reset code"
-                />
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.inputLabel}>Email Address</Text>
+                  <TextInput
+                    style={styles.input}
+                    value={email}
+                    onChangeText={setEmail}
+                    placeholder="Enter your email"
+                    keyboardType="email-address"
+                  />
+                </View>
+                <TouchableOpacity style={styles.resetButton} onPress={requestResetCode}>
+                  <Text style={styles.resetButtonText}>Request Reset Code</Text>
+                </TouchableOpacity>
               </View>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>New Password</Text>
-                <TextInput
-                  style={styles.input}
-                  value={newPassword}
-                  onChangeText={setNewPassword}
-                  placeholder="Enter new password"
-                  secureTextEntry
-                />
-              </View>
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>Confirm Password</Text>
-                <TextInput
-                  style={styles.input}
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  placeholder="Confirm new password"
-                  secureTextEntry
-                />
-              </View>
-              <TouchableOpacity style={styles.resetButton} onPress={resetPassword}>
-                <Text style={styles.resetButtonText}>Reset Password</Text>
-              </TouchableOpacity>
-            </>
-          )}
+            )}
 
-          {message ? (
-            <Text style={styles.messageText}>{message}</Text>
-          ) : null}
+            {step === 2 && (
+              <>
+                <View style={styles.inputGroup}>
+                  <View style={styles.inputWrapper}>
+                    <Text style={styles.inputLabel}>Reset Code</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={resetCode}
+                      onChangeText={setResetCode}
+                      placeholder="Enter reset code"
+                    />
+                  </View>
+                </View>
+                <View style={styles.inputGroup}>
+                  <View style={styles.inputWrapper}>
+                    <Text style={styles.inputLabel}>New Password</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={newPassword}
+                      onChangeText={setNewPassword}
+                      placeholder="Enter new password"
+                      secureTextEntry
+                    />
+                  </View>
+                </View>
+                <View style={styles.inputGroup}>
+                  <View style={styles.inputWrapper}>
+                    <Text style={styles.inputLabel}>Confirm Password</Text>
+                    <TextInput
+                      style={styles.input}
+                      value={confirmPassword}
+                      onChangeText={setConfirmPassword}
+                      placeholder="Confirm new password"
+                      secureTextEntry
+                    />
+                  </View>
+                </View>
+                <TouchableOpacity style={styles.resetButton} onPress={resetPassword}>
+                  <Text style={styles.resetButtonText}>Reset Password</Text>
+                </TouchableOpacity>
+              </>
+            )}
 
-          <TouchableOpacity style={styles.backToLogin} onPress={() => navigation.goBack()}>
-            <Text style={styles.backToLoginText}>Back to Login</Text>
-          </TouchableOpacity>
-        </View>
+            {message ? (
+              <Text style={styles.messageText}>{message}</Text>
+            ) : null}
+
+            <TouchableOpacity style={styles.backToLogin} onPress={() => navigation.goBack()}>
+              <Text style={styles.backToLoginText}>Back to Login</Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
       </LinearGradient>
     </>
   );
@@ -192,6 +206,10 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
     paddingTop: StatusBar.currentHeight
+  },
+  scrollContent: {
+    flexGrow: 1,
+    marginBottom: 60
   },
   white: {
     backgroundColor: '#ECEDFF',
@@ -213,17 +231,22 @@ const styles = StyleSheet.create({
     width: '100%',
     marginBottom: 20,
   },
-  label: {
-    color: '#0a1172',
-    marginBottom: 8,
-    fontWeight: '500',
-  },
-  input: {
+  inputWrapper: {
     backgroundColor: 'white',
-    borderRadius: 12,
-    padding: 15,
+    borderRadius: 15,
     borderWidth: 1,
     borderColor: '#e0e0e0',
+    padding: 15,
+  },
+  inputLabel: {
+    color: '#0a1172',
+    fontSize: 18,
+    fontWeight: '900',
+    marginBottom: 5,
+  },
+  input: {
+    padding: 0,
+    fontSize: 15
   },
   resetButton: {
     width: '100%',

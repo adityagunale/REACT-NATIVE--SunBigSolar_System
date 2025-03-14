@@ -6,6 +6,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BottomNavigation from './BottomNavigation';
+import config from '../config';
 
 const ProfileScreen = () => {
   const [userData, setUserData] = useState({
@@ -24,7 +25,7 @@ const ProfileScreen = () => {
     const fetchUserData = async () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
-        const response = await axios.get('http://192.168.43.42:8000/user', {
+        const response = await axios.get(`${config.getApiUrl()}/user`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setUserData(response.data);
@@ -39,7 +40,7 @@ const ProfileScreen = () => {
   const handleUpdate = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      await axios.put('http://192.168.43.42:8000/user', userData, {
+      await axios.put(`${config.getApiUrl()}/user`, userData, {
         headers: { Authorization: `Bearer ${token}` },
       });
       Alert.alert('Success', 'Profile updated successfully');

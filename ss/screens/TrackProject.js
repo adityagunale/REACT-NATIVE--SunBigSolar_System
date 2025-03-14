@@ -6,6 +6,7 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
+import config from '../config';
 
 const TrackProjectScreen = () => {
   const navigation = useNavigation();
@@ -18,7 +19,7 @@ const TrackProjectScreen = () => {
 
   useEffect(() => {
     // Fetch project status from the backend
-    axios.get('http://192.168.43.42:8000/project-status')
+    axios.get(`${config.getApiUrl()}/project-status`)
       .then(response => {
         const statusData = response.data;
         const updatedSteps = statusData.map(item => ({

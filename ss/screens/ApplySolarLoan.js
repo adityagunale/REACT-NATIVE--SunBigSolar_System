@@ -1,5 +1,5 @@
 /* ss/screens/ApplySolarLoan.js */
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, ScrollView, Image, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -8,6 +8,7 @@ import { Picker } from '@react-native-picker/picker';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import config from '../config';
 
 const ApplySolarLoan = () => {
     const navigation = useNavigation();
@@ -66,7 +67,7 @@ const ApplySolarLoan = () => {
 
             console.log(`Uploading ${documentType} with token: ${token}`);
 
-            const response = await axios.post('http://192.168.43.42:8000/uploadLoanDeatails', formData, {
+            const response = await axios.post(`${config.getApiUrl()}/uploadLoanDeatails`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${token}`
@@ -129,7 +130,7 @@ const ApplySolarLoan = () => {
             }
     
             // First submit the loan application
-            const response = await axios.post('http://192.168.43.42:8000/loan', {
+            const response = await axios.post(`${config.getApiUrl()}/loan`, {
                 name,
                 phone,
                 email,

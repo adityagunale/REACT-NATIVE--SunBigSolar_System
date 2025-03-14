@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, ScrollView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import config from '../config';
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -36,9 +37,9 @@ const LoginScreen = () => {
     };
 
     try {
-      const response = await axios.post("http://192.168.43.42:8000/login", user);
+      const response = await axios.post(`${config.getApiUrl()}/login`, user);
       const token = response.data.token;
-      await AsyncStorage.setItem("userToken", token); // Ensure the key matches the one used in MainScreen.js
+      await AsyncStorage.setItem("userToken", token);
       console.log('Token stored successfully');
       navigation.navigate("Main");
     } catch (error) {
@@ -68,57 +69,62 @@ const LoginScreen = () => {
         end={{x: 1, y: 0}}
         style={styles.gradient}
       >
-        <View style={styles.white}>
-          <Text style={styles.title}>Login</Text>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.white}>
+            <Text style={styles.title}>Login</Text>
 
-          <View style={styles.inputGroup}>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Email</Text>
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Enter Email"
-                keyboardType="email-address"
-              />
+            <View style={styles.inputGroup}>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Email</Text>
+                <TextInput
+                  style={styles.input}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Enter Email"
+                  keyboardType="email-address"
+                />
+              </View>
             </View>
-          </View>
 
-          <View style={styles.inputGroup}>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Password</Text>
-              <TextInput
-                style={styles.input}
-                value={password}
-                onChangeText={setPassword}
-                placeholder="Enter Password"
-                secureTextEntry
-              />
+            <View style={styles.inputGroup}>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Password</Text>
+                <TextInput
+                  style={styles.input}
+                  value={password}
+                  onChangeText={setPassword}
+                  placeholder="Enter Password"
+                  secureTextEntry
+                />
+              </View>
             </View>
+
+            {errorMessage ? (
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            ) : null}
+
+            <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
+              <Text style={styles.loginButtonText}>Login</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.forgotPassword} onPress={ForgotPassword}>
+              <Text style={styles.forgotPasswordText}>Forgot Password</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.otpButton} onPress={() => navigation.navigate('OtpLogin')}>
+              <Text style={styles.otpButtonText}>Login with OTP</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.signupPrompt} onPress={handleSignUp}>
+              <Text style={styles.signupText}>
+                Don't have any account? <Text style={styles.signupLink}>Sign Up</Text>
+              </Text>
+            </TouchableOpacity>
           </View>
-
-          {errorMessage ? (
-            <Text style={styles.errorText}>{errorMessage}</Text>
-          ) : null}
-
-          <TouchableOpacity style={styles.loginButton} onPress={handleLogin}>
-            <Text style={styles.loginButtonText}>Login</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.forgotPassword} onPress={ForgotPassword}>
-            <Text style={styles.forgotPasswordText}>Forgot Password</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.otpButton} onPress={() => navigation.navigate('OtpLogin')}>
-            <Text style={styles.otpButtonText}>Login with OTP</Text>
-          </TouchableOpacity>
-
-          <TouchableOpacity style={styles.signupPrompt} onPress={handleSignUp}>
-            <Text style={styles.signupText}>
-              Don't have any account? <Text style={styles.signupLink}>Sign Up</Text>
-            </Text>
-          </TouchableOpacity>
-        </View>
+        </ScrollView>
       </LinearGradient>
     </>
   );
@@ -128,6 +134,10 @@ const styles = StyleSheet.create({
   gradient: {
     flex: 1,
     paddingTop: StatusBar.currentHeight
+  },
+  scrollContent: {
+    flexGrow: 1,
+    marginBottom: 60
   },
   white: {
     backgroundColor: '#ECEDFF',

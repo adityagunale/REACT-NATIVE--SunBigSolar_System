@@ -6,6 +6,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
+import config from '../config';
 
 const BookCall = () => {
   const navigation = useNavigation();
@@ -31,7 +32,7 @@ const BookCall = () => {
     }
 
     try {
-      const response = await axios.post('http://192.168.43.42:8000/book-call', {
+      const response = await axios.post(`${config.getApiUrl()}/book-call`, {
         name,
         phone,
         email,

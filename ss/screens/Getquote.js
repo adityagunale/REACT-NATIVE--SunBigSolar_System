@@ -6,6 +6,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import config from '../config';
 
 const Getquote = () => {
   const navigation = useNavigation();
@@ -47,7 +48,7 @@ const Getquote = () => {
       }
 
       // Make API call
-      const response = await fetch('http://192.168.43.42:8000/calculate-solar-quote', {
+      const response = await fetch(`${config.getApiUrl()}/calculate-solar-quote`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

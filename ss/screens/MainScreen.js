@@ -7,6 +7,7 @@ import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BottomNavigation from './BottomNavigation';
 import { useNavigation } from '@react-navigation/native';
+import config from '../config';
 
 const HomeScreen = () => (
   <View style={styles.screenContainer}>
@@ -61,7 +62,7 @@ const MainScreen = () => {
           return;
         }
 
-        const response = await axios.get('http://192.168.43.42:8000/user', {
+        const response = await axios.get(`${config.getApiUrl()}/user`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },

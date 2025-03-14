@@ -13,36 +13,38 @@ const path = require('path');
 const fs = require('fs');
 const FileSet = require('./models/FileSet'); // Ensure this is imported
 const Loan = require('./models/loan'); // Ensure this is imported
+require('dotenv').config();
+
 const app = express();
-const port = 8000;
-const JWT_SECRET = "Q$r2K6W8n!jCW%Zk"; // Define your JWT secret
+const port = process.env.PORT || 8000;
+const JWT_SECRET = process.env.JWT_SECRET;
 
 // Create uploads directory if it doesn't exist
-const uploadDir = path.join(__dirname, "uploads");
+const uploadDir = path.join(__dirname, process.env.UPLOAD_DIR || "uploads");
 if (!fs.existsSync(uploadDir)) {
     fs.mkdirSync(uploadDir, { recursive: true });
 }
 
-app.use(cors());
+app.use(cors({
+    origin: process.env.CORS_ORIGIN || 'http://localhost:3000'
+}));
 app.use(express.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 app.use(passport.initialize());
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+app.use("/uploads", express.static(path.join(__dirname, process.env.UPLOAD_DIR || "uploads")));
 
-mongoose.connect(
-    "mongodb+srv://aadigunale2002:admin@cluster0.rin0d.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0",
-    {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-    }).then(() => {
-        console.log("Connected to Mongo DB");
-    }).catch((err) => {
-        console.log("Error connected to Mongo DB", err);
-    });
+mongoose.connect(process.env.MONGODB_URI, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+}).then(() => {
+    console.log("Connected to Mongo DB");
+}).catch((err) => {
+    console.log("Error connected to Mongo DB", err);
+});
 
 app.listen(port, () => {
-    console.log("Server running on port 8000");
+    console.log(`Server running on port ${port}`);
 });
 
 const User = require("./models/user");
@@ -61,13 +63,33 @@ const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     const token = authHeader && authHeader.split(' ')[1];
 
-    if (!token) return res.sendStatus(401);
+    if (!token) {
+        return res.status(401).json({ 
+            success: false, 
+            message: 'Access token is required' 
+        });
+    }
 
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403);
-        req.user = user;
+    try {
+        // Verify and decode the token
+        const decoded = jwt.verify(token, JWT_SECRET);
+        
+        // Check if decoded token has required fields
+        if (!decoded.userId && decoded.sub) {
+            // If token is from phone.email service, use 'sub' as userId
+            req.user = { userId: decoded.sub };
+        } else {
+            req.user = decoded;
+        }
         next();
-    });
+    } catch (error) {
+        console.error('Token verification error:', error);
+        return res.status(403).json({ 
+            success: false, 
+            message: 'Invalid or expired token',
+            error: error.message 
+        });
+    }
 };
 
 // Endpoint to get user details
@@ -323,7 +345,7 @@ app.post('/book-call', async (req, res) => {
 const storage = multer.diskStorage({
     destination: (req, file, cb) => {
         const fileType = file.mimetype.startsWith('image/') ? 'images' : 'pdfs';
-        const uploadDir = path.join(__dirname, "uploads", fileType);
+        const uploadDir = path.join(__dirname, process.env.UPLOAD_DIR || "uploads", fileType);
 
         if (!fs.existsSync(uploadDir)) {
             fs.mkdirSync(uploadDir, { recursive: true });
@@ -888,6 +910,72 @@ app.get('/solar-quotes', authenticateToken, async (req, res) => {
             success: false,
             message: 'Internal server error',
             error: error.message
+        });
+    }
+});
+
+
+// On your backend server
+app.post('/verify-mobile', async (req, res) => {
+    try {
+        const { mobileNumber } = req.body;
+        
+        // Check if the mobile number exists in your database
+        const user = await User.findOne({ tele: mobileNumber });
+        
+        if (user) {
+            // Create token for the user if found
+            const token = createToken(user._id);
+            res.json({
+                exists: true,
+                token: token,
+                user: {
+                    id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    tele: user.tele
+                }
+            });
+        } else {
+            res.json({
+                exists: false
+            });
+        }
+    } catch (error) {
+        console.error('Error in verify-mobile:', error);
+        res.status(500).json({
+            error: 'Error verifying mobile number'
+        });
+    }
+});
+
+// Add user-profile endpoint for OTP login
+app.get('/user-profile', authenticateToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.userId);
+        if (!user) {
+            return res.status(404).json({ 
+                success: false,
+                message: 'User not found' 
+            });
+        }
+
+        // Return user data without sensitive information
+        res.status(200).json({
+            success: true,
+            data: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+                tele: user.tele
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching user profile:', error);
+        res.status(500).json({ 
+            success: false,
+            message: 'Error fetching user profile',
+            error: error.message 
         });
     }
 });

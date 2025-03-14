@@ -6,6 +6,8 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  ScrollView,
+  StatusBar
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Feather from "react-native-vector-icons/Feather";
@@ -14,6 +16,7 @@ import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import config from '../config';
 
 const ShowDocuments = () => {
   const navigation = useNavigation();
@@ -25,12 +28,12 @@ const ShowDocuments = () => {
     const fetchUserData = async () => {
       try {
         const token = await AsyncStorage.getItem('userToken');
-        const userResponse = await axios.get('http://192.168.43.42:8000/user', {
+        const userResponse = await axios.get(`${config.getApiUrl()}/user`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         setUserName(userResponse.data.name);
 
-        const filesResponse = await axios.get('http://192.168.43.42:8000/files', {
+        const filesResponse = await axios.get(`${config.getApiUrl()}/files`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
         setUserDocuments(filesResponse.data.data);

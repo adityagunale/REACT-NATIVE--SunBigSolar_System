@@ -6,6 +6,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import config from '../config';
 
 const UploadScreen = () => {
   const navigation = useNavigation();
@@ -34,7 +35,7 @@ const UploadScreen = () => {
 
       const token = await AsyncStorage.getItem('token'); // Get token from storage
 
-      await axios.post('http://192.168.43.42:8000/upload', formData, {
+      await axios.post(`${config.getApiUrl()}/upload`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization':` Bearer ${token}` // Include token in headers

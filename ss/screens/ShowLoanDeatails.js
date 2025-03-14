@@ -9,6 +9,7 @@ import Feather from "react-native-vector-icons/Feather";
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import config from '../config';
 
 const LoanDetailsScreen = () => {
   const navigation = useNavigation();
@@ -28,7 +29,7 @@ const LoanDetailsScreen = () => {
         throw new Error('Authentication token not found. Please log in again.');
       }
 
-      const response = await axios.get('http://192.168.43.42:8000/loan/details', {
+      const response = await axios.get(`${config.getApiUrl()}/loan/details`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -50,7 +51,7 @@ const LoanDetailsScreen = () => {
         throw new Error('Authentication token not found. Please log in again.');
       }
 
-      const response = await axios.get('http://192.168.43.42:8000/loan/documents', {
+      const response = await axios.get(`${config.getApiUrl()}/loan/documents`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
