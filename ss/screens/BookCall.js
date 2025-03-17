@@ -1,12 +1,13 @@
 /* ss/screens/BookCall.js */
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, Platform } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, Platform, ScrollView } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import Icon from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import config from '../config';
+import { horizontalScale, verticalScale, moderateScale, responsiveSpacing } from '../utils/responsive';
 
 const BookCall = () => {
   const navigation = useNavigation();
@@ -81,127 +82,129 @@ const BookCall = () => {
         style={styles.gradient}
       >
         <View style={styles.iconback}>
-
           <TouchableOpacity onPress={() => navigation.navigate('Main')}>
             <Icon name="arrow-left" size={24} color="white" style={styles.title} />
           </TouchableOpacity>
           <Text style={styles.title1}>Book a Call</Text>
         </View>
 
-        <View style={styles.white}>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Name</Text>
-              <TextInput
-                style={styles.input}
-                value={name}
-                onChangeText={setName}
-                placeholder="Enter Name"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Mobile Number</Text>
-              <TextInput
-                style={styles.input}
-                value={phone}
-                onChangeText={setPhone}
-                placeholder="Enter Phone Number"
-                keyboardType="phone-pad"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Email ID</Text>
-              <TextInput
-                style={styles.input}
-                value={email}
-                onChangeText={setEmail}
-                placeholder="Enter Email ID"
-                keyboardType="email-address"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Address</Text>
-              <TextInput
-                style={styles.input}
-                value={address}
-                onChangeText={setAddress}
-                placeholder="Enter Address"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Nearest Landmark</Text>
-              <TextInput
-                style={styles.input}
-                value={landmark}
-                onChangeText={setLandmark}
-                placeholder="Enter Nearest Landmark"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Proposed Rooftop Solar System Size</Text>
-              <TextInput
-                style={styles.input}
-                value={solarSystemSize}
-                onChangeText={setSolarSystemSize}
-                placeholder="Enter System Size (e.g., 5 kW)"
-              />
-            </View>
-          </View>
-
-          <View style={styles.inputGroup}>
-            <View style={styles.inputWrapper}>
-              <Text style={styles.inputLabel}>Date to Schedule Site Visit</Text>
-              <View style={styles.dateInputContainer}>
+        <ScrollView 
+          showsVerticalScrollIndicator={false}
+          contentContainerStyle={styles.scrollViewContent}
+        >
+          <View style={styles.white}>
+            <View style={styles.inputGroup}>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Name</Text>
                 <TextInput
-                  style={styles.input1}
-                  value={scheduleDate}
-                  placeholder="Enter Date"
-                  onFocus={() => setShowDatePicker(true)}
+                  style={styles.input}
+                  value={name}
+                  onChangeText={setName}
+                  placeholder="Enter Name"
                 />
-                <TouchableOpacity onPress={() => setShowDatePicker(true)}>
-                  <Icon name="calendar" size={20} color="#0a1172" style={styles.calendarIcon} />
-                </TouchableOpacity>
               </View>
             </View>
+
+            <View style={styles.inputGroup}>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Mobile Number</Text>
+                <TextInput
+                  style={styles.input}
+                  value={phone}
+                  onChangeText={setPhone}
+                  placeholder="Enter Phone Number"
+                  keyboardType="phone-pad"
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Email ID</Text>
+                <TextInput
+                  style={styles.input}
+                  value={email}
+                  onChangeText={setEmail}
+                  placeholder="Enter Email ID"
+                  keyboardType="email-address"
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Address</Text>
+                <TextInput
+                  style={styles.input}
+                  value={address}
+                  onChangeText={setAddress}
+                  placeholder="Enter Address"
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Nearest Landmark</Text>
+                <TextInput
+                  style={styles.input}
+                  value={landmark}
+                  onChangeText={setLandmark}
+                  placeholder="Enter Nearest Landmark"
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Proposed Rooftop Solar System Size</Text>
+                <TextInput
+                  style={styles.input}
+                  value={solarSystemSize}
+                  onChangeText={setSolarSystemSize}
+                  placeholder="Enter System Size (e.g., 5 kW)"
+                />
+              </View>
+            </View>
+
+            <View style={styles.inputGroup}>
+              <View style={styles.inputWrapper}>
+                <Text style={styles.inputLabel}>Date to Schedule Site Visit</Text>
+                <View style={styles.dateInputContainer}>
+                  <TextInput
+                    style={styles.input1}
+                    value={scheduleDate}
+                    placeholder="Enter Date"
+                    onFocus={() => setShowDatePicker(true)}
+                  />
+                  <TouchableOpacity onPress={() => setShowDatePicker(true)}>
+                    <Icon name="calendar" size={20} color="#0a1172" style={styles.calendarIcon} />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </View>
+
+            {showDatePicker && (
+              <DateTimePicker
+                value={date}
+                mode="date" // Set mode to 'date' for date-only picker
+                display="default"
+                onChange={onChange}
+              />
+            )}
+
+            {errorMessage ? (
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            ) : null}
+            {successMessage ? (
+              <Text style={styles.successText}>{successMessage}</Text>
+            ) : null}
+
+            <TouchableOpacity style={styles.bookButton} onPress={() => handleBookCall()}>
+              <Text style={styles.bookButtonText}>SUBMIT</Text>
+            </TouchableOpacity>
           </View>
-
-          {showDatePicker && (
-            <DateTimePicker
-              value={date}
-              mode="date" // Set mode to 'date' for date-only picker
-              display="default"
-              onChange={onChange}
-            />
-          )}
-
-          {errorMessage ? (
-            <Text style={styles.errorText}>{errorMessage}</Text>
-          ) : null}
-          {successMessage ? (
-            <Text style={styles.successText}>{successMessage}</Text>
-          ) : null}
-
-
-          <TouchableOpacity style={styles.bookButton} onPress={() => handleBookCall()}>
-            <Text style={styles.bookButtonText}>SUBMIT</Text>
-          </TouchableOpacity>
-        </View>
+        </ScrollView>
       </LinearGradient>
     </>
   );
@@ -212,61 +215,64 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingTop: StatusBar.currentHeight,
   },
+  scrollViewContent: {
+    flexGrow: 1,
+  },
   white: {
     backgroundColor: '#ECEDFF',
-    height: '90%',
     width: '100%',
-    marginTop: '8%',
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    padding: 30,
+    marginTop: verticalScale(30),
+    borderTopLeftRadius: moderateScale(25),
+    borderTopRightRadius: moderateScale(25),
+    padding: responsiveSpacing(15),
     alignItems: 'center',
+    paddingBottom: verticalScale(50),
   },
   title: {
-    fontSize: 30,
+    fontSize: moderateScale(30),
     color: 'white',
     fontWeight: '900',
-    marginTop: 35,
-    marginLeft: 30
+    marginTop: verticalScale(35),
+    marginLeft: horizontalScale(30)
   },
   title1: {
-    fontSize: 30,
+    fontSize: moderateScale(30),
     color: 'white',
     fontWeight: '900',
-    marginLeft: 82,
-    marginTop: 30,
+    marginLeft: horizontalScale(60),
+    marginTop: verticalScale(30),
   },
   iconback: {
     flexDirection: 'row',
   },
   inputGroup: {
     width: '100%',
-    marginBottom: 10,
+    marginBottom: verticalScale(10),
   },
   inputWrapper: {
     backgroundColor: 'white',
-    borderRadius: 15,
+    borderRadius: moderateScale(15),
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    padding: 15,
+    padding: responsiveSpacing(10),
   },
   inputLabel: {
     color: '#0a1172',
-    fontSize: 18,
+    fontSize: moderateScale(18),
     fontWeight: '900',
-    marginBottom: 5,
-    marginLeft: 20,
+    marginBottom: verticalScale(5),
+    marginLeft: horizontalScale(20),
   },
   input: {
     padding: 0,
-    fontSize: 16,
+    fontSize: moderateScale(16),
     color: "#0a1172",
-    marginLeft: 20,
+    marginLeft: horizontalScale(20),
   },
   input1: {
     padding: 0,
-    fontSize: 15,
-    marginLeft: 55,
+    fontSize: moderateScale(15),
+    marginLeft: horizontalScale(55),
     color: "#0a1172",
   },
   dateInputContainer: {
@@ -274,31 +280,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   calendarIcon: {
-    marginLeft: -100,
+    marginLeft: horizontalScale(-100),
   },
   errorText: {
     color: 'red',
-    marginBottom: -11,
+    marginBottom: verticalScale(-11),
     textAlign: 'center',
+    fontSize: moderateScale(14),
   },
   successText: {
     color: 'green',
-    fontSize: 16,
-    marginBottom: -11,
+    fontSize: moderateScale(16),
+    marginBottom: verticalScale(-11),
     textAlign: 'center',
-},
-
+  },
   bookButton: {
     width: '100%',
     backgroundColor: '#0a1172',
-    padding: 15,
-    borderRadius: 12,
+    padding: responsiveSpacing(14),
+    borderRadius: moderateScale(12),
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: verticalScale(20),
   },
   bookButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: moderateScale(16),
     fontWeight: '600',
   },
 });

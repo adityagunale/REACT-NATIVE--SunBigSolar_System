@@ -7,7 +7,8 @@ import {
   StatusBar,
   Image,
   Alert,
-  ScrollView
+  ScrollView,
+  Platform
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -17,6 +18,7 @@ import DocumentPicker from 'react-native-document-picker';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../config';
+import { horizontalScale, verticalScale, moderateScale, responsiveSpacing } from '../utils/responsive';
 
 
 const Upload = () => {
@@ -201,24 +203,25 @@ const Upload = () => {
 const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
+   
   },
   filePreview: {
-    marginTop: 10,
+    marginTop: verticalScale(10),
     width: '100%',
-    borderRadius: 8,
+    borderRadius: moderateScale(8),
     overflow: 'hidden',
   },
   pdfPreview: {
     backgroundColor: '#f5f5f5',
-    padding: 20,
-    borderRadius: 8,
+    padding: responsiveSpacing(20),
+    borderRadius: moderateScale(8),
     alignItems: 'center',
     justifyContent: 'center',
   },
   fileName: {
-    marginTop: 10,
+    marginTop: verticalScale(10),
     color: '#0a1172',
-    fontSize: 14,
+    fontSize: moderateScale(14),
     textAlign: 'center',
     fontFamily: 'Poppins-Regular',
   },
@@ -236,132 +239,133 @@ const styles = StyleSheet.create({
     backgroundColor: '#ECEDFF',
     minHeight: '100%',
     width: '100%',
-    marginTop: '6%',
-    borderTopLeftRadius: 25,
-    borderTopRightRadius: 25,
-    padding: 30,
+    marginTop: verticalScale(30),
+    borderTopLeftRadius: moderateScale(25),
+    borderTopRightRadius: moderateScale(25),
+    padding: responsiveSpacing(15),
     alignItems: 'center',
   },
   previewImage: {
     width: '100%',
-    height: 150,
-    marginTop: 10,
-    borderRadius: 8,
+    height: verticalScale(150),
+    marginTop: verticalScale(10),
+    borderRadius: moderateScale(8),
     resizeMode: 'cover',
   },
   iconback: {
     flexDirection: 'row',
-    marginBottom:20
+    marginBottom: verticalScale(20)
   },
   title: {
-    fontSize: 25,
+    fontSize: moderateScale(25),
     color: 'white',
     fontWeight: '900',
-    marginTop: 20,
-    marginLeft: 30,
+    marginTop: verticalScale(20),
+    marginLeft: horizontalScale(15),
   },
   title1: {
-    fontSize: 25,
+    fontSize: moderateScale(25),
     color: 'white',
     fontWeight: '900',
-    marginLeft: 30,
-    marginTop: 15,
+    marginLeft: horizontalScale(20),
+    marginTop: verticalScale(15),
   },
   inputGroup: {
     width: '100%',
-    marginBottom: 8,
+    marginBottom: verticalScale(8),
   },
   inputWrapper: {
     backgroundColor: 'white',
-    borderRadius: 15,
+    borderRadius: moderateScale(15),
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    padding: 13,
+    padding: responsiveSpacing(12),
   },
   inputLabel: {
     color: '#0a1172',
-    fontSize: 16,
-    marginBottom: 5,
-    marginLeft: 20,
+    fontSize: moderateScale(16),
+    marginBottom: verticalScale(5),
+    marginLeft: horizontalScale(20),
     fontFamily: 'Poppins-Bold',
 
   },
   input: {
     padding: 0,
-    fontSize: 16,
+    fontSize: moderateScale(16),
     color: "#0a1172",
-    marginLeft: 20,
+    marginLeft: horizontalScale(20),
   },
   pickerContainer: {
-    marginLeft: 20,
-    marginRight: 20,
+    marginLeft: horizontalScale(20),
+    marginRight: horizontalScale(20),
     color: 'white'
   },
   picker: {
     color: '#0a1172',
-    marginLeft: -8,
-    marginTop: -15,
-    height: 50,
+    marginLeft: horizontalScale(-8),
+    marginTop: verticalScale(-15),
+    height: verticalScale(50),
     placeholder: 'Select',
   },
   pickerItem: {
-    fontSize: 16,
+    fontSize: moderateScale(16),
 
   },
   errorText: {
     color: 'red',
-    marginBottom: -11,
+    marginBottom: verticalScale(-11),
     textAlign: 'center',
+    fontSize: moderateScale(14),
   },
   successText: {
     color: 'green',
-    fontSize: 16,
-    marginBottom: -11,
+    fontSize: moderateScale(16),
+    marginBottom: verticalScale(-11),
     textAlign: 'center',
   },
   loanButton: {
-    // width: '100%',
     backgroundColor: '#0a1172',
-    padding: 15,
-    borderRadius: 12,
+    padding: responsiveSpacing(13),
+    borderRadius: moderateScale(12),
     alignItems: 'center',
-    marginTop: 20,
-    marginBottom: 10,
-    marginHorizontal: 25
+    marginTop: verticalScale(20),
+    marginBottom: verticalScale(15),
+    marginHorizontal: horizontalScale(25),
+    width: '90%',
   },
   ButtonText: {
     color: 'white',
-    fontSize: 18,
+    fontSize: moderateScale(18),
     fontWeight: '600',
   },
   htext: {
     fontFamily: 'Poppins-Bold',
-    fontSize: 18,
+    fontSize: moderateScale(18),
     color: '#0a1172'
 
   },
   pan: {
     flexDirection: 'row',
-    marginLeft: 15
+    marginLeft: horizontalScale(15)
   },
   UP: {
     fontFamily: 'Poppins-Regular',
-    marginLeft: 10,
-    marginTop: 5,
-    fontSize: 16,
+    marginLeft: horizontalScale(10),
+    marginTop: verticalScale(5),
+    fontSize: moderateScale(16),
     color: '#0a1172'
 
   },
   maintext: {
-    marginBottom: 25
+    marginBottom: verticalScale(25)
   },
   downloadText: {
     color: '#0a1172',
     fontFamily: "Poppins-Regular",
-    fontSize: 17,
-    marginTop: -5,
-    marginBottom: 4,
-    marginLeft:120
+    fontSize: moderateScale(17),
+    marginTop: verticalScale(-5),
+    marginBottom: verticalScale(4),
+    marginLeft: horizontalScale(80)
   
   },
 

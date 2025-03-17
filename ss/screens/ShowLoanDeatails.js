@@ -10,10 +10,11 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../config';
+import { horizontalScale, verticalScale, moderateScale, responsiveSpacing } from '../utils/responsive';
 
 const LoanDetailsScreen = () => {
   const navigation = useNavigation();
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState('documents');
   const [loanDetails, setLoanDetails] = useState(null);
   const [document, setDocument] = useState(null); // Change to a single document
 
@@ -81,7 +82,7 @@ const LoanDetailsScreen = () => {
       <Text style={styles.documentTitle}>
         {document && document.title ? document.title : 'Pan Card'}
       </Text>
-      <Feather name="edit" size={24} color="black" fontWeight="bold" marginLeft={70} />
+      <Feather name="edit" size={24} color="black" fontWeight="bold" />
     </View>
     <View style={styles.documentsCard}>
       <Image 
@@ -92,7 +93,7 @@ const LoanDetailsScreen = () => {
       <Text style={styles.documentTitle}>
         {document && document.title ? document.title : 'Aadhar Card'}
       </Text>
-      <Feather name="edit" size={24} color="black" fontWeight="bold" marginLeft={50} />
+      <Feather name="edit" size={24} color="black" fontWeight="bold" />
     </View>
     <View style={styles.documentsCard}>
       <Image 
@@ -103,7 +104,7 @@ const LoanDetailsScreen = () => {
       <Text style={styles.documentTitle}>
         {document && document.title ? document.title : 'Income Proof'}
       </Text>
-      <Feather name="edit" size={24} color="black" fontWeight="bold" marginLeft={40} />
+      <Feather name="edit" size={24} color="black" fontWeight="bold" />
     </View>
     <View style={styles.documentsCard}>
       <Image 
@@ -114,7 +115,7 @@ const LoanDetailsScreen = () => {
       <Text style={styles.documentTitle}>
         {document && document.title ? document.title : 'ITR'}
       </Text>
-      <Feather name="edit" size={24} color="black" fontWeight="bold" marginLeft={110} />
+      <Feather name="edit" size={24} color="black" fontWeight="bold" />
     </View>
     </>
   );
@@ -124,9 +125,9 @@ const LoanDetailsScreen = () => {
       {/* Header */}
       <LinearGradient colors={['#003F7D', '#00AEEF']} style={styles.header}>
         <View style={styles.headerContent}>
-          <Ionicons name="person-circle-outline" size={35} color="white" />
+          <Ionicons name="person-circle-outline" size={40} color="white" />
           <Text style={styles.headerText}>Hello ! {loanDetails ? loanDetails.name : 'User Name'}</Text>
-          <MaterialCommunityIcons name="menu" size={24} color="white" />
+          <MaterialCommunityIcons name="menu" size={24} color="white" style={styles.menuIcon} />
         </View>
         <Text style={styles.headerTitle}>Solar Loan Details</Text>
       </LinearGradient>
@@ -151,7 +152,7 @@ const LoanDetailsScreen = () => {
             </View>
             <View style={styles.detailContent}>
               <Text style={styles.detailText}>+91 {loanDetails ? loanDetails.phone : 'Loading...'}</Text>
-              <Feather name="edit" size={24} color="black" fontWeight="bold" marginLeft={155} />
+              <Feather name="edit" size={24} color="black" fontWeight="bold" />
             </View>
           </View>
 
@@ -161,7 +162,7 @@ const LoanDetailsScreen = () => {
             </View>
             <View style={styles.detailContent}>
               <Text style={styles.detailText}>{loanDetails ? loanDetails.email : 'Loading...'}</Text>
-              <Feather name="edit" size={24} color="black" fontWeight="bold" marginLeft={170} />
+              <Feather name="edit" size={24} color="black" fontWeight="bold" />
             </View>
           </View>
 
@@ -171,7 +172,7 @@ const LoanDetailsScreen = () => {
             </View>
             <View style={styles.detailContent}>
               <Text style={styles.detailText}>{loanDetails ? loanDetails.address : 'Loading...'}</Text>
-              <Feather name="edit" size={24} color="black" fontWeight="bold" marginLeft={251} />
+              <Feather name="edit" size={24} color="black" fontWeight="bold" />
             </View>
           </View>
 
@@ -181,7 +182,7 @@ const LoanDetailsScreen = () => {
             </View>
             <View style={styles.detailContent}>
               <Text style={styles.detailText}>{loanDetails ? loanDetails.solarSystemSize : 'Loading...'}</Text>
-              <Feather name="edit" size={24} color="black" fontWeight="bold" marginLeft={243} />
+              <Feather name="edit" size={24} color="black" fontWeight="bold" />
             </View>
           </View>
 
@@ -191,7 +192,7 @@ const LoanDetailsScreen = () => {
             </View>
             <View style={styles.detailContent}>
               <Text style={styles.detailText}>{loanDetails ? loanDetails.occupation : 'Loading...'}</Text>
-              <Feather name="edit" size={24} color="black" fontWeight="bold" marginLeft={160} />
+              <Feather name="edit" size={24} color="black" fontWeight="bold" />
             </View>
           </View>
 
@@ -201,7 +202,7 @@ const LoanDetailsScreen = () => {
             </View>
             <View style={styles.detailContent}>
               <Text style={styles.detailText}>{loanDetails ? loanDetails.annualincome : 'Loading...'}</Text>
-              <Feather name="edit" size={24} color="black" fontWeight="bold" marginLeft={211} />
+              <Feather name="edit" size={24} color="black" fontWeight="bold" />
             </View>
           </View>
         </View>
@@ -263,145 +264,168 @@ const styles = StyleSheet.create({
     backgroundColor: '#F5F5FF',
   },
   header: {
-    padding: 20,
-    paddingTop: 50,
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
+    padding: responsiveSpacing(20),
+    paddingTop: verticalScale(50),
+    borderBottomLeftRadius: moderateScale(10),
+    borderBottomRightRadius: moderateScale(10),
   },
   headerContent: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+      marginHorizontal: horizontalScale(2),
+      alignItems: 'center',
+    
+  },
+  menuIcon: {
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+    marginLeft: 'auto',
+    
   },
   headerText: {
     color: 'white',
-    fontSize: 18,
-    marginLeft: -160
+    fontSize: moderateScale(18),
+    marginLeft: horizontalScale(10),
   },
   headerTitle: {
     color: 'white',
-    fontSize: 22,
+    fontSize: moderateScale(22),
     fontWeight: 'bold',
-    marginTop: 20,
+    marginTop: verticalScale(20),
     textAlign: 'center',
-    marginBottom: 40
+    marginBottom: verticalScale(40)
   },
   profileCard: {
     backgroundColor: 'white',
-    marginBottom: 20,
+    marginBottom: verticalScale(20),
     width: '90%',
-    marginLeft: 22,
-    marginTop: -40,
-    padding: 10,
-    borderRadius: 15,
+    marginLeft: horizontalScale(22),
+    marginTop: verticalScale(-40),
+    padding: responsiveSpacing(10),
+    borderRadius: moderateScale(15),
     flexDirection: 'row',
     alignItems: 'center',
     shadowColor: '#000',
     shadowOpacity: 0.1,
-    shadowRadius: 5,
+    shadowRadius: moderateScale(5),
     elevation: 3,
   },
   profileImage: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    marginRight: 15,
+    width: horizontalScale(50),
+    height: verticalScale(50),
+    borderRadius: moderateScale(25),
+    marginRight: horizontalScale(15),
   },
   profileName: {
-    fontSize: 18,
+    fontSize: moderateScale(18),
     fontWeight: 'bold',
-    color:"#0a1172"
+    color: "#0a1172"
   },
   profileClientId: {
     color: 'black',
+    fontSize: moderateScale(14),
   },
   sectionTitle: {
-    marginLeft: 15,
-    fontSize: 17,
+    marginLeft: horizontalScale(15),
+    fontSize: moderateScale(17),
     fontWeight: 'bold',
     color: "#0a1172",
     fontFamily: 'Poppins-Bold',
-    marginTop:20
+    marginTop: verticalScale(20)
   },
   detailsCard: {
     backgroundColor: 'white',
-    margin: 15,
-    padding: 15,
-    borderRadius: 10,
+    margin: responsiveSpacing(15),
+    padding: responsiveSpacing(15),
+    borderRadius: moderateScale(10),
     shadowColor: '#000',
     shadowOpacity: 0.1,
-    shadowRadius: 5,
+    shadowRadius: moderateScale(5),
     elevation: 3,
   },
   detailItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 10,
+    marginBottom: verticalScale(10),
   },
   detailContent: {
     flexDirection: 'row',
     alignItems: 'center',
-    flex: 1, // Ensure it takes full width
+    flex: 1,
     borderBottomWidth: 1,
     borderBottomColor: '#D1FCFF',
+    justifyContent: 'space-between',
+    paddingRight: horizontalScale(10),
   },
   iconWrapper: {
-    paddingRight: 10, // Add some padding to separate the icon from the text
+    paddingRight: horizontalScale(10),
   },
   detailText: {
-    marginLeft: 10,
-    fontSize: 19,
-    marginBottom:10
+    marginLeft: horizontalScale(10),
+    fontSize: moderateScale(19),
+    marginBottom: verticalScale(10),
+    color: "#0a1172"
+
   },
   documentsCard: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "white",
-    marginHorizontal: 20,
-    marginVertical: 5,
-    marginTop:20,
-    borderRadius: 10,
+    marginHorizontal: horizontalScale(20),
+    marginVertical: verticalScale(5),
+    marginTop: verticalScale(20),
+    borderRadius: moderateScale(10),
     shadowColor: '#000',
     shadowOpacity: 0.1,
-    shadowRadius: 5,
+    shadowRadius: moderateScale(5),
     elevation: 3,
+    justifyContent: 'space-between',
+    paddingRight: horizontalScale(15),
   },
   documentTitle: {
-    fontSize: 16,
-    marginBottom: 10,
-    color:"#0a1172"
+    fontSize: moderateScale(16),
+    marginBottom: verticalScale(10),
+    color: "#0a1172",
+    flex: 1,
+    marginLeft: horizontalScale(10),
   },
   documentImage: {
-    width: 180, height: 180, borderRadius: 5, marginLeft:15, marginRight: 10, resizeMode:"contain", marginBottom:-20, marginTop:-20
+    width: horizontalScale(180),
+    height: verticalScale(180),
+    borderRadius: moderateScale(5),
+    marginLeft: horizontalScale(15),
+    marginRight: horizontalScale(10),
+    resizeMode: "contain",
+    marginBottom: verticalScale(-20),
+    marginTop: verticalScale(-20)
   },
   editIcon: {
     position: 'absolute',
-    right: 15,
-    top: 15,
+    right: horizontalScale(15),
+    top: verticalScale(15),
   },
   bottomNav: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: 10,
+    padding: responsiveSpacing(10),
     backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: moderateScale(20),
+    borderTopRightRadius: moderateScale(20),
     shadowColor: '#000',
     shadowOpacity: 0.1,
-    shadowRadius: 10,
+    shadowRadius: moderateScale(10),
     elevation: 5,
-    marginHorizontal: 20,
-    marginBottom: 10,
-    borderRadius: 10
+    marginHorizontal: horizontalScale(20),
+    marginBottom: verticalScale(10),
+    borderRadius: moderateScale(10)
   },
   navItem: {
-    padding: 10
+    padding: responsiveSpacing(10)
   },
   activeNavItem: {
     backgroundColor: '#C6EAFF',
-    borderRadius: 20,
-    padding: 10
+    borderRadius: moderateScale(20),
+    padding: responsiveSpacing(10)
   },
 });
 

@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, ScrollView } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, StatusBar, ScrollView, ActivityIndicator } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import config from '../config';
+import { horizontalScale, verticalScale, moderateScale, responsiveSpacing } from '../utils/responsive';
 
 const ForgotPassword = () => {
   const navigation = useNavigation();
@@ -137,10 +138,19 @@ const ForgotPassword = () => {
                     onChangeText={setEmail}
                     placeholder="Enter your email"
                     keyboardType="email-address"
+                    editable={!loading}
                   />
                 </View>
-                <TouchableOpacity style={styles.resetButton} onPress={requestResetCode}>
-                  <Text style={styles.resetButtonText}>Request Reset Code</Text>
+                <TouchableOpacity 
+                  style={[styles.resetButton, loading && styles.buttonDisabled]}
+                  onPress={requestResetCode}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="white" size="small" />
+                  ) : (
+                    <Text style={styles.resetButtonText}>Request Reset Code</Text>
+                  )}
                 </TouchableOpacity>
               </View>
             )}
@@ -155,6 +165,7 @@ const ForgotPassword = () => {
                       value={resetCode}
                       onChangeText={setResetCode}
                       placeholder="Enter reset code"
+                      editable={!loading}
                     />
                   </View>
                 </View>
@@ -167,6 +178,7 @@ const ForgotPassword = () => {
                       onChangeText={setNewPassword}
                       placeholder="Enter new password"
                       secureTextEntry
+                      editable={!loading}
                     />
                   </View>
                 </View>
@@ -179,11 +191,20 @@ const ForgotPassword = () => {
                       onChangeText={setConfirmPassword}
                       placeholder="Confirm new password"
                       secureTextEntry
+                      editable={!loading}
                     />
                   </View>
                 </View>
-                <TouchableOpacity style={styles.resetButton} onPress={resetPassword}>
-                  <Text style={styles.resetButtonText}>Reset Password</Text>
+                <TouchableOpacity 
+                  style={[styles.resetButton, loading && styles.buttonDisabled]}
+                  onPress={resetPassword}
+                  disabled={loading}
+                >
+                  {loading ? (
+                    <ActivityIndicator color="white" size="small" />
+                  ) : (
+                    <Text style={styles.resetButtonText}>Reset Password</Text>
+                  )}
                 </TouchableOpacity>
               </>
             )}
@@ -192,8 +213,14 @@ const ForgotPassword = () => {
               <Text style={styles.messageText}>{message}</Text>
             ) : null}
 
-            <TouchableOpacity style={styles.backToLogin} onPress={() => navigation.goBack()}>
-              <Text style={styles.backToLoginText}>Back to Login</Text>
+            <TouchableOpacity 
+              style={[styles.backToLogin, loading && styles.buttonDisabled]} 
+              onPress={() => navigation.goBack()}
+              disabled={loading}
+            >
+              <Text style={[styles.backToLoginText, loading && styles.textDisabled]}>
+                Back to Login
+              </Text>
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -209,70 +236,93 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    marginBottom: 60
+    marginBottom: verticalScale(60)
   },
   white: {
     backgroundColor: '#ECEDFF',
-    height: '90%',
+    minHeight: verticalScale(700),
     width: '100%',
     marginTop: '50%',
-    borderTopLeftRadius: 100,
-    padding: 30,
+    borderTopLeftRadius: moderateScale(100),
+    padding: responsiveSpacing(15),
     alignItems: 'center',
   },
   title: {
-    fontSize: 28,
+    fontSize: moderateScale(28),
     color: '#0a1172',
-    marginTop: 70,
-    marginBottom: 60,
+    marginTop: verticalScale(40),
+    marginBottom: verticalScale(40),
     fontWeight: 'bold',
+    textAlign: 'center'
   },
   inputGroup: {
-    width: '100%',
-    marginBottom: 20,
+    width: '92%',
+    marginBottom: verticalScale(20),
   },
   inputWrapper: {
     backgroundColor: 'white',
-    borderRadius: 15,
+    borderRadius: moderateScale(15),
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    padding: 15,
+    padding: responsiveSpacing(8),
+    minHeight: verticalScale(65),
   },
   inputLabel: {
     color: '#0a1172',
-    fontSize: 18,
+    fontSize: moderateScale(18),
     fontWeight: '900',
-    marginBottom: 5,
+    marginBottom: verticalScale(5),
+    marginLeft: responsiveSpacing(15),
   },
   input: {
     padding: 0,
-    fontSize: 15
+    fontSize: moderateScale(16),
+    height: verticalScale(25),
+    color: '#0a1172',
+    marginLeft: responsiveSpacing(15),
   },
   resetButton: {
     width: '100%',
     backgroundColor: '#0a1172',
-    padding: 15,
-    borderRadius: 12,
+    padding: responsiveSpacing(8),
+    borderRadius: moderateScale(12),
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: verticalScale(20),
+    minHeight: verticalScale(50),
+    justifyContent: 'center'
   },
   resetButtonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: moderateScale(17),
     fontWeight: '600',
+    textAlign: 'center'
   },
   messageText: {
     color: 'red',
-    marginBottom: 20,
+    marginBottom: verticalScale(15),
     textAlign: 'center',
+    fontSize: moderateScale(14),
+    width: '100%',
+    paddingHorizontal: horizontalScale(20)
   },
   backToLogin: {
-    marginTop: 20,
+    marginTop: verticalScale(20),
+    padding: responsiveSpacing(10),
+    minHeight: verticalScale(45),
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   backToLoginText: {
     color: '#0a1172',
-    fontSize: 18,
+    fontSize: moderateScale(18),
+    fontWeight: '500',
   },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+  textDisabled: {
+    opacity: 0.7,
+  }
 });
 
 export default ForgotPassword;

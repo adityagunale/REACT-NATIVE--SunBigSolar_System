@@ -1,10 +1,11 @@
 const config = {
   development: {
     apiUrl: 'http://192.168.43.42:8000',
+    // apiUrl: 'https://react-native-sunbigsolar-system.onrender.com',
   },
   production: {
     // Replace this with your production backend URL when deployed
-    apiUrl: 'https://your-production-backend.com',
+    apiUrl: 'https://react-native-sunbigsolar-system.onrender.com',
   },
 };
 

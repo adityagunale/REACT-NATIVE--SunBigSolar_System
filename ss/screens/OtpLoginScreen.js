@@ -6,6 +6,7 @@ import {
   StatusBar, 
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
@@ -14,9 +15,12 @@ import DeviceInfo from 'react-native-device-info';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../config';
+import { horizontalScale, verticalScale, moderateScale, responsiveSpacing } from '../utils/responsive';
 
 const OtpLoginScreen = () => {
   const [deviceId, setDeviceId] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isWebViewLoading, setIsWebViewLoading] = useState(true);
   const navigation = useNavigation();
   const webViewRef = useRef(null);
 
@@ -31,11 +35,14 @@ const OtpLoginScreen = () => {
   useEffect(() => {
     const fetchDeviceId = async () => {
       try {
+        setIsLoading(true);
         const id = await DeviceInfo.getUniqueId();
         setDeviceId(id);
         console.log('Device ID:', id);
       } catch (error) {
         console.error('Error fetching device ID:', error);
+      } finally {
+        setIsLoading(false);
       }
     };
     fetchDeviceId();
@@ -61,6 +68,7 @@ const OtpLoginScreen = () => {
 
   const fetchUserData = async (token) => {
     try {
+      setIsLoading(true);
       // First extract the phone number from the token
       const rawPhoneNumber = await extractPhoneFromToken(token);
       if (!rawPhoneNumber) {
@@ -104,6 +112,8 @@ const OtpLoginScreen = () => {
       if (error.response?.status === 404) {
         console.error('Server returned 404 - phone number not found');
       }
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -176,6 +186,7 @@ const OtpLoginScreen = () => {
 
   const phoneAuthJwt = async (event) => {
     try {
+      setIsLoading(true);
       const encodedJWT = event.nativeEvent.data;
       console.log('Received JWT:', encodedJWT);
       
@@ -190,13 +201,16 @@ const OtpLoginScreen = () => {
       await fetchUserData(encodedJWT);
     } catch (error) {
       console.error('Error in phoneAuthJwt:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   if (!deviceId) {
     return (
       <View style={styles.loadingContainer}>
-        <Text>Loading...</Text>
+        <ActivityIndicator size="large" color="#0a1172" />
+        <Text style={styles.loadingText}>Initializing...</Text>
       </View>
     );
   }
@@ -218,20 +232,38 @@ const OtpLoginScreen = () => {
             <Text style={styles.title}>Login with OTP</Text>
             
             <View style={styles.webViewContainer}>
+              {isWebViewLoading && (
+                <View style={styles.webViewLoading}>
+                  <ActivityIndicator size="large" color="#0a1172" />
+                  <Text style={styles.loadingText}>Loading...</Text>
+                </View>
+              )}
               <WebView
                 source={{ uri: URI }}
-                style={styles.webView}
+                style={[styles.webView, isWebViewLoading && styles.hidden]}
                 onMessage={phoneAuthJwt}
                 javaScriptEnabled={true}
                 domStorageEnabled={true}
                 startInLoadingState={true}
                 scalesPageToFit={true}
                 ref={webViewRef}
+                onLoadStart={() => setIsWebViewLoading(true)}
+                onLoadEnd={() => setIsWebViewLoading(false)}
               />
             </View>
             
-            <TouchableOpacity style={styles.backToLogin} onPress={() => navigation.goBack()}>
-              <Text style={styles.backToLoginText}>Back to Login</Text>
+            <TouchableOpacity 
+              style={[styles.backToLogin, isLoading && styles.buttonDisabled]} 
+              onPress={() => navigation.goBack()}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <ActivityIndicator color="#0a1172" size="small" />
+              ) : (
+                <Text style={[styles.backToLoginText, isLoading && styles.textDisabled]}>
+                  Back to Login
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
         </ScrollView>
@@ -243,36 +275,37 @@ const OtpLoginScreen = () => {
 const styles = StyleSheet.create({
   gradient: {
     flex: 1,
-    paddingTop: StatusBar.currentHeight,
+    paddingTop: StatusBar.currentHeight
   },
   scrollContent: {
     flexGrow: 1,
-    marginBottom:20
+    marginBottom: verticalScale(60)
   },
   white: {
     backgroundColor: '#ECEDFF',
-    height: '90%',
+    minHeight: '100%',
     width: '100%',
     marginTop: '50%',
-    borderTopLeftRadius: 100,
-    padding: 30,
+    borderTopLeftRadius: moderateScale(100),
+    padding: responsiveSpacing(15),
     alignItems: 'center',
   },
   title: {
-    fontSize: 28,
+    fontSize: moderateScale(28),
     color: '#0a1172',
-    marginTop: 70,
-    marginBottom: 30,
+    marginTop: verticalScale(40),
+    marginBottom: verticalScale(40),
     fontWeight: 'bold',
+    textAlign: 'center'
   },
   webViewContainer: {
-    width: '100%',
-    height: '60%',
+    width: '92%',
+    height: verticalScale(400),
     backgroundColor: '#ECEDFF',
-    borderRadius: 12,
+    borderRadius: moderateScale(12),
     overflow: 'hidden',
-    marginTop: 5,
-    marginBottom: 1
+    marginTop: verticalScale(5),
+    marginBottom: verticalScale(-5)
   },
   webView: {
     flex: 1,
@@ -283,13 +316,45 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#ECEDFF',
+  },
+  loadingText: {
+    marginTop: verticalScale(10),
+    color: '#0a1172',
+    fontSize: moderateScale(16),
+    fontWeight: '500',
+  },
+  webViewLoading: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#ECEDFF',
+    zIndex: 1,
+  },
+  hidden: {
+    opacity: 0,
+  },
+  buttonDisabled: {
+    opacity: 0.7,
+  },
+  textDisabled: {
+    opacity: 0.7,
   },
   backToLogin: {
-    marginTop: 20,
+    marginTop: verticalScale(20),
+    padding: responsiveSpacing(10),
+    minHeight: verticalScale(45),
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   backToLoginText: {
     color: '#0a1172',
-    fontSize: 18,
+    fontSize: moderateScale(20),
+    fontWeight: '500',
   },
 });
 

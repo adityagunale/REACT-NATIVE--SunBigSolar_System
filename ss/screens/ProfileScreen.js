@@ -1,12 +1,13 @@
 /* ss/screens/ProfileScreen.js */
 import React, { useState, useEffect } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, Platform, StatusBar } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import Icon from 'react-native-vector-icons/Ionicons';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BottomNavigation from './BottomNavigation';
 import config from '../config';
+import { horizontalScale, verticalScale, moderateScale, responsiveSpacing } from '../utils/responsive';
 
 const ProfileScreen = () => {
   const [userData, setUserData] = useState({
@@ -122,58 +123,91 @@ const ProfileScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#ECEDFF" }, // Updated background color
+  container: { 
+    flex: 1, 
+    backgroundColor: "#ECEDFF",
+    paddingTop: Platform.OS === 'ios' ? verticalScale(40) : 0
+  },
   header: {
-    height: 250,
+    height: verticalScale(250),
     justifyContent: "center",
     alignItems: "center",
-    borderBottomLeftRadius: 150,
-    borderBottomRightRadius: 150,
-    paddingTop: 50,
+    borderBottomLeftRadius: moderateScale(150),
+    borderBottomRightRadius: moderateScale(150),
+    paddingTop: verticalScale(50),
   },
-  headerText: { color: "white", fontSize: 20, fontWeight: "bold", marginTop: 10, marginBottom: 50 },
+  headerText: { 
+    color: "white", 
+    fontSize: moderateScale(20), 
+    fontWeight: "bold", 
+    marginTop: verticalScale(10), 
+    marginBottom: verticalScale(50) 
+  },
   profileImageWrapper: {
     position: "absolute",
-    bottom: -30,
+    bottom: verticalScale(-30),
     backgroundColor: "#fff",
-    borderRadius: 50,
-    padding: 10,
+    borderRadius: moderateScale(50),
+    padding: responsiveSpacing(10),
     shadowColor: "#000",
     shadowOpacity: 0.2,
-    shadowOffset: { width: 0, height: 3 },
-    shadowRadius: 5,
+    shadowOffset: { 
+      width: 0, 
+      height: verticalScale(3) 
+    },
+    shadowRadius: moderateScale(5),
     elevation: 5,
   },
   profileImage: {
-    width: 60,
-    height: 60,
+    width: horizontalScale(60),
+    height: verticalScale(60),
     justifyContent: "center",
     alignItems: "center",
-    borderRadius: 50,
+    borderRadius: moderateScale(50),
     backgroundColor: "#F3E5F5",
   },
-  infoContainer: { marginTop: 60, padding: 20 },
+  infoContainer: { 
+    marginTop: verticalScale(60), 
+    padding: responsiveSpacing(20) 
+  },
   infoRow: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "white",
-    borderRadius: 10,
-    padding: 15,
-    marginBottom: 10,
+    borderRadius: moderateScale(10),
+    padding: responsiveSpacing(15),
+    marginBottom: verticalScale(10),
     shadowColor: "#000",
     shadowOpacity: 0.1,
-    shadowOffset: { width: 0, height: 2 },
-    shadowRadius: 5,
+    shadowOffset: { 
+      width: 0, 
+      height: verticalScale(2) 
+    },
+    shadowRadius: moderateScale(5),
     elevation: 3,
   },
-  input: { marginLeft: 10, flex: 1, color: "#333" },
-  button: { alignSelf: "center", width: "80%", marginTop: 20 },
+  input: { 
+    marginLeft: horizontalScale(10), 
+    flex: 1, 
+    color: "#333",
+    fontSize: moderateScale(16),
+    paddingVertical: verticalScale(5)
+  },
+  button: { 
+    alignSelf: "center", 
+    width: "80%", 
+    marginTop: verticalScale(20) 
+  },
   buttonBackground: {
-    padding: 15,
-    borderRadius: 25,
+    padding: responsiveSpacing(15),
+    borderRadius: moderateScale(25),
     alignItems: "center",
   },
-  buttonText: { color: "white", fontWeight: "bold", fontSize: 16 },
+  buttonText: { 
+    color: "white", 
+    fontWeight: "bold", 
+    fontSize: moderateScale(16) 
+  },
 });
 
 export default ProfileScreen;

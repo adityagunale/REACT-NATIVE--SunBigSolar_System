@@ -7,7 +7,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  StatusBar
+  StatusBar,
+  Platform
 } from "react-native";
 import Ionicons from "react-native-vector-icons/Ionicons";
 import Feather from "react-native-vector-icons/Feather";
@@ -17,6 +18,7 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../config';
+import { horizontalScale, verticalScale, moderateScale, responsiveSpacing } from '../utils/responsive';
 
 const ShowDocuments = () => {
   const navigation = useNavigation();
@@ -36,7 +38,14 @@ const ShowDocuments = () => {
         const filesResponse = await axios.get(`${config.getApiUrl()}/files`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        setUserDocuments(filesResponse.data.data);
+        console.log('Files Response:', filesResponse.data); // Debug log
+        
+        // Add index as fallback id if _id is not present
+        const documentsWithIds = filesResponse.data.data.map((doc, index) => ({
+          ...doc,
+          fallbackId: index.toString()
+        }));
+        setUserDocuments(documentsWithIds);
       } catch (error) {
         console.error('Error fetching user data:', error);
       }
@@ -48,57 +57,65 @@ const ShowDocuments = () => {
   const DocumentItem = ({ item }) => (
     <View style={styles.documentItem}>
       <Image
-  source={{ uri: item.url }} // Correct way to use the URL
-  style={styles.documentImage}
-/>
-      
+        source={{ uri: item.url }}
+        style={styles.documentImage}
+      />
       <Text style={styles.documentText}>{item.originalName}</Text>
       <TouchableOpacity>
-        <Feather name="edit" size={20} color="black" fontWeight="bold" marginRight={10}/>
+        <Feather 
+          name="edit" 
+          size={moderateScale(20)} 
+          color="black" 
+          fontWeight="bold" 
+          style={styles.editIcon}
+        />
       </TouchableOpacity>
     </View>
   );
 
+  const renderHeader = () => (
+    <>
+      <LinearGradient
+        colors={['#0D1A69', '#01C1EE']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.header}
+      >
+        <View style={styles.headerContent}>
+          <Ionicons name="person-circle-outline" size={moderateScale(36)} color="white" />
+          <Text style={styles.userName}>Hello ! {userName}</Text>
+          <Ionicons name="menu" size={moderateScale(30)} color="#8CFEFF" style={styles.menuIcon} />
+        </View>
+        <Text style={styles.title}>Project Documents Details</Text>
+      </LinearGradient>
+
+      <View style={styles.clientCard}>
+        <Ionicons name="person-circle-outline" size={moderateScale(50)} color="#0C1767" />
+        <View style={styles.client}>
+          <Text style={styles.clientName}>{userName}</Text>
+          <Text style={styles.clientId}>Client Id: 2001</Text>
+        </View>
+      </View>
+
+      <Text style={styles.sectionTitle}>Documents Details</Text>
+    </>
+  );
+
   return (
     <View style={styles.container}>
+      <StatusBar translucent backgroundColor="transparent" barStyle="light-content" />
       <FlatList
         data={userDocuments}
-        keyExtractor={(item) => item._id}
+        keyExtractor={(item) => item._id?.toString() || item.fallbackId}
         renderItem={({ item }) => <DocumentItem item={item} />}
-        ListHeaderComponent={
-          <>
-            <LinearGradient
-              colors={['#0D1A69', '#01C1EE']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-              style={styles.header}
-            >
-              <View style={styles.headerContent}>
-                <Ionicons name="person-circle-outline" size={35} color="white" />
-                <Text style={styles.userName}>Hello ! {userName}</Text>
-                <Ionicons name="menu" size={30} color="#8CFEFF" />
-              </View>
-              <Text style={styles.title}>Project Documents Details</Text>
-            </LinearGradient>
-
-            <View style={styles.clientCard}>
-              <Ionicons name="person-circle-outline" size={50} color="#0C1767" />
-              <View style={styles.client}>
-                <Text style={styles.clientName}>{userName}</Text>
-                <Text style={styles.clientId}>Client Id: 2001</Text>
-              </View>
-            </View>
-
-            <Text style={styles.sectionTitle}>Documents Details</Text>
-            
-          </>
-        }
+        ListHeaderComponent={renderHeader}
+        showsVerticalScrollIndicator={false}
       />
 
       <View style={styles.bottomNav}>
-        {bottomNavItems.map((item, index) => (
+        {bottomNavItems.map((item) => (
           <TouchableOpacity
-            key={index}
+            key={item.key}
             style={[styles.navItem, activeTab === item.key && styles.activeNavItem]}
             onPress={() => {
               if (item.key === 'profile') {
@@ -115,7 +132,11 @@ const ShowDocuments = () => {
               }
             }}
           >
-            <Icon name={item.icon} size={25} color={activeTab === item.key ? '#002F7A' : 'black'} />
+            <Icon 
+              name={item.icon} 
+              size={moderateScale(25)} 
+              color={activeTab === item.key ? '#002F7A' : 'black'} 
+            />
           </TouchableOpacity>
         ))}
       </View>
@@ -132,78 +153,121 @@ const bottomNavItems = [
 ];
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: "#ECEDFF" },
+  container: { 
+    flex: 1, 
+    backgroundColor: "#ECEDFF" 
+  },
   header: {
-    padding: 20,
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
-    height: 200,
+    padding: responsiveSpacing(20),
+    borderBottomLeftRadius: moderateScale(10),
+    borderBottomRightRadius: moderateScale(10),
+    height: verticalScale(200),
     justifyContent: "center",
   },
   headerContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    flexDirection: 'row',
+    marginHorizontal: horizontalScale(2),
+    alignItems: 'center',
   },
-  userName: { color: "white", fontSize: 18, marginLeft:-140 },
-  title: { fontSize: 20, fontWeight: "bold", color: "white", marginTop: 20 , textAlign: "center"},
+  userName: { 
+    color: 'white',
+    fontSize: moderateScale(18),
+    marginLeft: horizontalScale(10), 
+  },
+  menuIcon: {
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+    marginLeft: 'auto',
+    
+  },
+  title: { 
+    fontSize: moderateScale(20), 
+    fontWeight: "bold", 
+    color: "white", 
+    marginTop: verticalScale(20), 
+    textAlign: "center"
+  },
   clientCard: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "white",
-    padding: 15,
-    marginHorizontal: 20,
-    borderRadius: 10,
+    padding: responsiveSpacing(15),
+    marginHorizontal: horizontalScale(20),
+    borderRadius: moderateScale(10),
     shadowColor: "#000",
     shadowOpacity: 0.1,
-    shadowRadius: 5,
+    shadowRadius: moderateScale(5),
     elevation: 3,
-    marginTop: -40,
+    marginTop: verticalScale(-40),
   },
-  client: {},
-  clientName: { fontSize: 18, fontWeight: "bold", marginLeft:10},
-  clientId: { fontSize: 14, color: "black" , marginLeft:10},
+  client: {
+    marginLeft: horizontalScale(10)
+  },
+  clientName: { 
+    fontSize: moderateScale(18), 
+    fontWeight: "bold"
+  },
+  clientId: { 
+    fontSize: moderateScale(14), 
+    color: "black"
+  },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: moderateScale(18),
     fontWeight: "bold",
-    margin: 20,
+    margin: responsiveSpacing(20),
   },
   documentItem: {
     flexDirection: "row",
     alignItems: "center",
     backgroundColor: "white",
-    marginHorizontal: 20,
-    marginVertical: 5,
-    borderRadius: 10,
+    marginHorizontal: horizontalScale(10),
+    marginVertical: verticalScale(8),
+    borderRadius: moderateScale(10),
     shadowColor: "#000",
     shadowOpacity: 0.1,
-    shadowRadius: 5,
+    shadowRadius: moderateScale(5),
     elevation: 3,
+    padding: responsiveSpacing(0),
+    height: verticalScale(140),
   },
-  documentImage: { width: 180, height: 180, borderRadius: 5,marginLeft:15, marginRight: 10 , resizeMode:"contain", marginBottom:-20, marginTop:-20},
-  documentText: { flex: 1, fontSize: 16 },
+  documentImage: { 
+    width: horizontalScale(180), 
+    height: verticalScale(180), 
+    borderRadius: moderateScale(5),
+    marginLeft: horizontalScale(15), 
+    marginRight: horizontalScale(10), 
+    resizeMode: "contain"
+  },
+  documentText: { 
+    flex: 1, 
+    fontSize: moderateScale(16),
+    marginLeft: horizontalScale(10)
+  },
+  editIcon: {
+    marginRight: horizontalScale(10)
+  },
   bottomNav: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: 10,
+    padding: responsiveSpacing(10),
     backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: moderateScale(20),
+    borderTopRightRadius: moderateScale(20),
     shadowColor: '#000',
     shadowOpacity: 0.1,
-    shadowRadius: 10,
+    shadowRadius: moderateScale(10),
     elevation: 5,
-    marginHorizontal: 20,
-    marginBottom: 10,
-    borderRadius: 10
+    marginHorizontal: horizontalScale(20),
+    marginBottom: Platform.OS === 'ios' ? verticalScale(30) : verticalScale(10),
+    borderRadius: moderateScale(10)
   },
   navItem: {
-    padding: 10
+    padding: responsiveSpacing(10)
   },
   activeNavItem: {
     backgroundColor: '#C6EAFF',
-    borderRadius: 20,
-    padding: 10
+    borderRadius: moderateScale(20),
+    padding: responsiveSpacing(10)
   },
 });
 

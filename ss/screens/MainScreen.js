@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { StyleSheet, Text, View, TouchableOpacity, StatusBar , ScrollView,Image, Animated, Dimensions, PanResponder, Easing } from 'react-native';
+import { StyleSheet, Text, View, TouchableOpacity, StatusBar, ScrollView, Image, Animated, Dimensions, PanResponder, Easing, Platform } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 // import Icon from 'react-native-vector-icons/Ionicons';
 import Icon from 'react-native-vector-icons/FontAwesome';
@@ -8,6 +8,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import BottomNavigation from './BottomNavigation';
 import { useNavigation } from '@react-navigation/native';
 import config from '../config';
+import { horizontalScale, verticalScale, moderateScale, responsiveSpacing } from '../utils/responsive';
 
 const HomeScreen = () => (
   <View style={styles.screenContainer}>
@@ -21,17 +22,9 @@ const MainScreen = () => {
   const [activeTab, setActiveTab] = useState('home');
   const [userData, setUserData] = useState({ name: '', email: '' });
   const [greeting, setGreeting] = useState('');
-  const scrollX = useRef(new Animated.Value(0)).current;
   const scrollViewRef = useRef(null);
   const { width } = Dimensions.get('window');
-  const [isScrolling, setIsScrolling] = useState(false);
-  const animationRef = useRef(null);
-  const panResponderRef = useRef(null);
   const imageScale = useRef(new Animated.Value(1)).current;
-  const resumeTimerRef = useRef(null);
-  const scrollTimeoutRef = useRef(null);
-  const lastScrollPosition = useRef(0);
-  const isUserScrolling = useRef(false);
 
   const carouselData = [
     { id: 1, image: require("../assets/solar-panel.webp"), title: "Solar for Home" },
@@ -77,93 +70,6 @@ const MainScreen = () => {
   }, []);
 
   useEffect(() => {
-    panResponderRef.current = PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: () => true,
-      onPanResponderGrant: () => {
-        setIsScrolling(true);
-        if (animationRef.current) {
-          animationRef.current.stop();
-        }
-      },
-      onPanResponderMove: (_, gestureState) => {
-        const newPosition = -gestureState.dx;
-        scrollX.setValue(newPosition / width);
-      },
-      onPanResponderRelease: (_, gestureState) => {
-        setIsScrolling(false);
-        if (!isUserScrolling.current) {
-          startAutoScroll();
-        }
-      },
-      onPanResponderTerminate: () => {
-        setIsScrolling(false);
-        if (!isUserScrolling.current) {
-          startAutoScroll();
-        }
-      },
-    });
-
-    return () => {
-      if (panResponderRef.current) {
-        panResponderRef.current.panHandlers = {};
-      }
-    };
-  }, []);
-
-  const handleScroll = (event) => {
-    // Set user scrolling flag
-    isUserScrolling.current = true;
-    
-    // Stop the carousel animation when scrolling starts
-    if (animationRef.current) {
-      animationRef.current.stop();
-    }
-
-    // Clear any existing timeout
-    if (scrollTimeoutRef.current) {
-      clearTimeout(scrollTimeoutRef.current);
-    }
-
-    // Update last scroll position
-    lastScrollPosition.current = event.nativeEvent.contentOffset.y;
-
-    // Set a new timeout to resume after user stops scrolling
-    scrollTimeoutRef.current = setTimeout(() => {
-      isUserScrolling.current = false;
-      startAutoScroll();
-    }, 1000);
-  };
-
-  const startAutoScroll = () => {
-    if (animationRef.current) {
-      animationRef.current.stop();
-    }
-
-    // Get the current position of the carousel
-    const currentPosition = scrollX._value;
-    
-    // Create a new animation starting from the current position
-    const animation = Animated.loop(
-      Animated.sequence([
-        Animated.timing(scrollX, {
-          toValue: 1,
-          duration: 40000,
-          useNativeDriver: true,
-          easing: Easing.linear,
-        }),
-      ])
-    );
-
-    animationRef.current = animation;
-    animation.start();
-  };
-
-  useEffect(() => {
-    startAutoScroll();
-  }, []);
-
-  useEffect(() => {
     const animateImage = () => {
       Animated.sequence([
         Animated.timing(imageScale, {
@@ -184,37 +90,6 @@ const MainScreen = () => {
     animateImage();
   }, []);
 
-  const handleCarouselPress = () => {
-    // Stop the current animation
-    if (animationRef.current) {
-      animationRef.current.stop();
-    }
-
-    // Clear any existing timer
-    if (resumeTimerRef.current) {
-      clearTimeout(resumeTimerRef.current);
-    }
-
-    // Set a new timer to resume after 1 minute
-    resumeTimerRef.current = setTimeout(() => {
-      startAutoScroll();
-    }, 60000); // 60000 ms = 1 minute
-  };
-
-  const renderScreen = () => {
-    switch (activeScreen) {
-      case 'Home':
-        return <HomeScreen />;
-      case 'Profile':
-        return <ProfileScreen userData={userData} onUpdate={setUserData} />;
-      case 'ReferAndEarn':
-        return <ReferAndEarnScreen />;
-      default:
-        return <HomeScreen />;
-    }
-  };
-  
-
   return (
     <>
 
@@ -224,27 +99,22 @@ const MainScreen = () => {
             barStyle="light-content"
           /> */}
 <View style={styles.container}>
-      <ScrollView 
-        style={styles.scrollContainer}
-        ref={scrollViewRef}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        showsVerticalScrollIndicator={false}
-      >
+      
           <LinearGradient
-           colors={['#0D1A69', '#01C1EE']}
-           start={{ x: 0, y: 0 }}
-           end={{ x: 1, y: 0 }}
-           style={styles.header}
+          colors={['#0D1A69', '#01C1EE']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 0 }}
+          style={styles.header}
+
    
           ></LinearGradient>
                     <View style={styles.he}>
 
           
           <View style={styles.hellotext}>
-        <Icon name="user-circle" size={35} color="white" onPress={() => navigation.navigate('Profile')}/>
+        <Icon name="user-circle" size={moderateScale(35)} color="white" onPress={() => navigation.navigate('Profile')}/>
           <Text style={styles.greeting}>Hello ! {userData.name}  </Text>
-          <Icon name="bars" size={28} color="#8CFEFF" style={styles.menuIcon} onPress={() => {/* Handle menu press */}} />
+          <Icon name="bars" size={moderateScale(28)} color="#8CFEFF" style={styles.menuIcon} onPress={() => {/* Handle menu press */}} />
           {/* <Text style={styles.greeting}>Hello ! User Name</Text> */}
           </View>
           <View style={styles.text}>
@@ -254,27 +124,26 @@ const MainScreen = () => {
             <Text style={styles.proposalText}>GET A FREE PROPOSAL</Text>
           </TouchableOpacity>
         </View>
+        
+        <ScrollView 
+        style={styles.scrollContainer}
+        ref={scrollViewRef}
+        showsVerticalScrollIndicator={false}
+      >
          
          {/* Horizontal Scroll for "Solar for Home" */}
           <View style={styles.carouselContainer}>
-            <Animated.View 
-              style={[
-                styles.carouselContent,
-                {
-                  transform: [{
-                    translateX: scrollX.interpolate({
-                      inputRange: [0, 1],
-                      outputRange: [0, -width * 2],
-                      extrapolate: 'clamp'
-                    })
-                  }]
-                }
-              ]}
-              {...panResponderRef.current?.panHandlers}
+            <ScrollView 
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.scrollView}
+              contentContainerStyle={styles.carouselContent}
             >
-              {/* Original items */}
-              {carouselData.map((item, index) => (
-                <TouchableOpacity key={item.id} style={styles.card} onPress={handleCarouselPress}>
+              {carouselData.map((item) => (
+                <TouchableOpacity 
+                  key={item.id} 
+                  style={styles.card}
+                >
                   <View style={styles.Image}>
                     <Animated.Image 
                       source={item.image} 
@@ -290,25 +159,7 @@ const MainScreen = () => {
                   </View>
                 </TouchableOpacity>
               ))}
-              {/* Duplicate all items for seamless loop */}
-              {carouselData.map((item, index) => (
-                <TouchableOpacity key={`duplicate-${item.id}`} style={styles.card} onPress={handleCarouselPress}>
-                  <View style={styles.Image}>
-                    <Animated.Image 
-                      source={item.image} 
-                      style={[
-                        styles.im,
-                        {
-                          transform: [{ scale: imageScale }],
-                        }
-                      ]}
-                      resizeMode="stretch"
-                    />
-                    <Text style={styles.stext}>{item.title}</Text>
-                  </View>
-                </TouchableOpacity>
-              ))}
-            </Animated.View>
+            </ScrollView>
           </View>
 
         <View style={styles.gridContainer}>
@@ -340,7 +191,7 @@ const MainScreen = () => {
               }
             }}
               >
-              <Icon name={item.icon} size={25} color={activeTab === item.key ? 'white' : '#002F7A'} />
+              <Icon name={item.icon} size={moderateScale(25)} color={activeTab === item.key ? 'white' : '#002F7A'} />
               <Text style={[styles.gridText, activeTab === item.key && styles.activeGridText]}>{item.label}</Text>
             </TouchableOpacity>
           ))}
@@ -363,7 +214,7 @@ const MainScreen = () => {
               }
             }}
           >
-            <Icon name={item.icon} size={25} color={activeTab === item.key ? '#002F7A' : 'black'} />
+            <Icon name={item.icon} size={moderateScale(25)} color={activeTab === item.key ? '#002F7A' : 'black'} />
           </TouchableOpacity>
         ))}
       </View>
@@ -399,8 +250,6 @@ const bottomNavItems = [
 ];
 
 const styles = StyleSheet.create({
-
-
   container: {
     flex: 1,
     backgroundColor: '#ECEDFF',
@@ -409,259 +258,204 @@ const styles = StyleSheet.create({
     flex: 1
   },
   header: {
-    padding: 20,
-    // justifyContent: "center",
-    // alignItems: "center",
-
-    // backgroundColor: '#002F7A',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    height:290
-    
+    padding: responsiveSpacing(20),
+    borderBottomLeftRadius: moderateScale(25),
+    borderBottomRightRadius: moderateScale(25),
+    height: Platform.OS === 'ios' ? verticalScale(250) : verticalScale(230),
   },
-  he:{
-    padding: 20,
-    // justifyContent: "center",
-    // alignItems: "center",
-
-    // backgroundColor: '#002F7A',
-    borderBottomLeftRadius: 20,
-    borderBottomRightRadius: 20,
-    marginTop:-300
+  he: {
+    padding: responsiveSpacing(20),
+    borderBottomLeftRadius: moderateScale(20),
+    borderBottomRightRadius: moderateScale(20),
+    marginTop: Platform.OS === 'ios' ? verticalScale(-320) : verticalScale(-300),
+    position: 'relative',
+    zIndex: 1,
   },
   menuIcon: {
-    marginLeft:110
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+    marginLeft: 'auto',
+    paddingRight: horizontalScale(10),
   },
   greeting: {
     color: 'white',
-    fontSize: 18,
-    // marginBottom: 5,
-    marginLeft:20,
-    marginTop:4
-    
+    fontSize: moderateScale(18),
+    marginLeft: horizontalScale(15),
+    marginTop: verticalScale(2),
   },
   subtitle: {
     color: 'white',
-    fontSize: 20,
-    marginHorizontal:60,
+    fontSize: moderateScale(20),
+    textAlign: 'center',
+    marginTop: Platform.OS === 'ios' ? verticalScale(-15) : verticalScale(-15),
   },
   boldText: {
     fontWeight: 'bold',
-    fontSize: 30,
+    fontSize: moderateScale(30),
     textAlign: 'center',
   },
   proposalButton: {
-    backgroundColor: 'white',
-    padding: 11,
-    borderRadius: 15,
+    backgroundColor: '#0C1767',
+    padding: responsiveSpacing(11),
+    borderRadius: moderateScale(15),
     alignItems: 'center',
-    marginTop:-15,
-    backgroundColor:'#0C1767',
-    borderColor:'white',
-    borderWidth:4,
-    width:350,
-    marginLeft:20
-   
+    marginTop: verticalScale(-10),
+    marginBottom: verticalScale(-40),
+    borderColor: 'white',
+    borderWidth: moderateScale(2),
+    width: '90%',
+    alignSelf: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: moderateScale(5),
+    elevation: 3,
+    position: 'relative',
+    zIndex: 2,
   },
   proposalText: {
-    color:'white',
+    color: 'white',
     fontWeight: 'bold',
-    fontSize: 17,
-   
+    fontSize: moderateScale(17),
   },
   cardContainer: {
     flexDirection: 'row',
-    
-    justifyContent:
-      'space-around',
-    marginVertical: 20
+    justifyContent: 'space-around',
+    marginVertical: verticalScale(20),
   },
   card: {
     backgroundColor: 'white',
-    padding: 20,
-    borderRadius: 10,
-   
-    width: '45%',
+    width: horizontalScale(180),
+    borderRadius: moderateScale(15),
+    borderTopRightRadius: moderateScale(70),
+    borderTopLeftRadius: moderateScale(70),
+    height: verticalScale(135),
+    marginRight: horizontalScale(10),
     alignItems: 'center',
-    marginTop:-15,
-    marginBottom:20,
-  
+    shadowColor: '#000',
+    shadowOpacity: 0.1,
+    shadowRadius: moderateScale(5),
+    elevation: 0,
   },
   gridContainer: {
-    // flexDirection: 'row',
-    // flexWrap: 'wrap',
-    // justifyContent: 'center',
-    // marginTop:15,
-    // marginBottom:15,
-    // marginHorizontal:20,
-    //  backgroundColor:'white',
-    // borderWidth:10,
-    // borderColor:'white',
-    // borderRadius:20,
-    
     flexDirection: 'row',
     flexWrap: 'wrap',
     justifyContent: 'center',
-    marginTop: 5,
-    marginBottom:15,
-    marginHorizontal: 18,
+    marginTop: verticalScale(5),
+    marginBottom: verticalScale(15),
+    marginHorizontal: horizontalScale(15),
     backgroundColor: 'white',
-    // borderWidth: 10,
-    borderColor: 'white',
-    borderRadius: 15,
-    borderTopWidth:15,
-    borderBottomWidth:10
-
+    borderRadius: moderateScale(15),
+    padding: responsiveSpacing(10),
   },
   gridItem: {
-    // backgroundColor: 'white',
-    // padding: 20,
-    // marginTop:5,
-    // margin: 3,
-    // borderRadius: 18,
-    // alignItems: 'center',
-    // width: '31%',
-    // height: '31%',
-    // backgroundColor:'#ECEDFF'
-
     backgroundColor: '#ECEDFF',
-    padding: 18,
-    margin: 2,
-    borderRadius: 20,
+    padding: responsiveSpacing(15),
+    margin: responsiveSpacing(5),
+    borderRadius: moderateScale(20),
     alignItems: 'center',
     width: '30%',
+    minHeight: verticalScale(100),
+    justifyContent: 'center',
   },
   gridText: {
-  //   marginTop: 10,
-  //   color: '#002F7A',
-  //   fontSize: 13,
-  //  fontWeight:500,
-  //   textAlign: 'center'
-
-  marginTop: 10,
-  color: '#002F7A',
-  fontSize: 13,
-  textAlign: 'center',
-  fontFamily: 'Poppins-Regular',
-  
-
+    marginTop: verticalScale(8),
+    color: '#002F7A',
+    fontSize: moderateScale(13),
+    textAlign: 'center',
+    fontFamily: 'Poppins-Regular',
   },
   activeGridItem: {
-    backgroundColor: '#C6EAFF'
+    backgroundColor: '#C6EAFF',
   },
   activeGridText: {
     color: 'black',
-    // fontWeight: 'bold',
     fontFamily: 'Poppins-Bold',
   },
   bottomNav: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: 10,
+    padding: responsiveSpacing(10),
     backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: moderateScale(20),
+    borderTopRightRadius: moderateScale(20),
     shadowColor: '#000',
     shadowOpacity: 0.1,
-    shadowRadius: 10,
+    shadowRadius: moderateScale(10),
     elevation: 5,
-    marginHorizontal:20,
-    marginBottom:10,
-    borderRadius:10
+    marginHorizontal: horizontalScale(20),
+    marginBottom: Platform.OS === 'ios' ? verticalScale(30) : verticalScale(10),
+    borderRadius: moderateScale(10),
   },
   navItem: {
-    padding: 10
+    padding: responsiveSpacing(10),
   },
   activeNavItem: {
     backgroundColor: '#C6EAFF',
-    borderRadius: 20,
-    padding: 10
+    borderRadius: moderateScale(20),
+    padding: responsiveSpacing(10),
   },
-  text:{
-   marginVertical:70,
-   
+  text: {
+    marginVertical: verticalScale(50),
   },
-  hellotext:{
-    marginTop:50,
-    flexDirection:'row',
-    marginHorizontal:20,
-  },
-
-  horizontalScroll: {
-    
-    paddingHorizontal: 10,
-   
-  },
-  card: {
-    backgroundColor: 'white',
-    width: 180,
-    borderRadius: 15,
-    borderTopRightRadius:70,
-    borderTopLeftRadius:70,
-    // padding: 10,
-    height:135,
-    marginRight: 10,
+  hellotext: {
+    marginTop: Platform.OS === 'ios' ? verticalScale(120) : verticalScale(110),
+    flexDirection: 'row',
+    marginHorizontal: horizontalScale(20),
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOpacity: 0.1,
-    shadowRadius: 5,
-    elevation: 0,
   },
-  stext:{
-    fontSize:18,
-    fontWeight:900,
-    textAlign:'center',
-    color:"#0C1767",
-    marginTop:6
-    
-    
+  horizontalScroll: {
+    paddingHorizontal: horizontalScale(10),
   },
-  stext1:{
-    fontSize:18,
-    fontWeight:900,
-    textAlign:'center',
-    color:"#0C1767",
-    marginTop:6
-    
-    
+  stext: {
+    fontSize: moderateScale(16),
+    fontWeight: '900',
+    textAlign: 'center',
+    color: "#0C1767",
+    marginTop: verticalScale(6),
+    paddingHorizontal: horizontalScale(5),
   },
-  Image:{
-    marginTop:-2,
+  stext1: {
+    fontSize: moderateScale(18),
+    fontWeight: '900',
+    textAlign: 'center',
+    color: "#0C1767",
+    marginTop: verticalScale(6)
   },
-  im:{
-    width: 160,
-    height: 100,
-    borderRadius: 10,
-    resizeMode:"stretch"
+  Image: {
+    alignItems: 'center',
   },
-  im1:{
-    width: 160,
-    height: 100,
-    borderRadius: 10,
-   resizeMode:"stretch"
-  
+  im: {
+    width: horizontalScale(160),
+    height: verticalScale(100),
+    borderRadius: moderateScale(10),
   },
-  im2:{
-    width: 160,
-    height: 100,
-    borderRadius: 10,
-   resizeMode:"stretch"
-  
+  im1: {
+    width: horizontalScale(160),
+    height: verticalScale(100),
+    borderRadius: moderateScale(10),
+    resizeMode: "stretch"
+  },
+  im2: {
+    width: horizontalScale(160),
+    height: verticalScale(100),
+    borderRadius: moderateScale(10),
+    resizeMode: "stretch"
   },
   carouselContainer: {
     width: '100%',
     overflow: 'hidden',
-    marginVertical: 10,
+    marginVertical: verticalScale(10),
     backgroundColor: '#ECEDFF',
-    marginTop: -10,
+    marginTop: verticalScale(20),
+  },
+  scrollView: {
+    flexGrow: 0,
   },
   carouselContent: {
     flexDirection: 'row',
-    paddingHorizontal: 10,
+    paddingHorizontal: horizontalScale(10),
+    marginTop: responsiveSpacing(20),
   },
-
-
-
 });
 
 export default MainScreen;

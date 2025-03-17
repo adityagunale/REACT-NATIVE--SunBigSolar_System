@@ -7,6 +7,7 @@ import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../config';
+import { horizontalScale, verticalScale, moderateScale, responsiveSpacing } from '../utils/responsive';
 
 const Getquote = () => {
   const navigation = useNavigation();
@@ -283,19 +284,21 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   title: {
-    fontSize: 30,
-    color: 'white',
+    fontSize: moderateScale(30),
+    color: 'white', 
     fontWeight: '900',
-    marginTop: 21,
-    marginLeft: 30
+    marginTop: verticalScale(21),
+    marginLeft: horizontalScale(20)
   },
   title1: {
-    fontSize: 25,
+    fontSize: moderateScale(25),
     color: 'white',
-    marginLeft: 100,
-    marginTop: 20,
+    marginTop: verticalScale(20),
+    marginBottom: verticalScale(20),
+    marginLeft: horizontalScale(-40),
     fontWeight: 'bold',
-    marginBottom:20
+    textAlign: 'center',
+    flex: 1
   },
   sectionContainer: {
     width: '100%',

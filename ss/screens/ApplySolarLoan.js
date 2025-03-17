@@ -9,6 +9,7 @@ import { useNavigation } from '@react-navigation/native';
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import config from '../config';
+import { horizontalScale, verticalScale, moderateScale, responsiveSpacing } from '../utils/responsive';
 
 const ApplySolarLoan = () => {
     const navigation = useNavigation();
@@ -413,32 +414,33 @@ const styles = StyleSheet.create({
     white: {
         backgroundColor: '#ECEDFF',
         width: '100%',
-        marginTop: '4%',
-        borderTopLeftRadius: 25,
-        borderTopRightRadius: 25,
-        padding: 30,
+        marginTop: verticalScale(15),
+        borderTopLeftRadius: moderateScale(25),
+        borderTopRightRadius: moderateScale(25),
+        padding: responsiveSpacing(15),
         alignItems: 'center',
     },
     sectionTitle: {
-        fontSize: 18,
+        fontSize: moderateScale(20),
         fontWeight: "bold",
-        marginLeft: -230,
-        marginBottom: 20,
+        marginLeft: horizontalScale(-150),
+        marginBottom: verticalScale(20),
+        marginTop: verticalScale(20),
         color: "#0a1172",
         fontFamily: 'Poppins-Bold',
     },
     title: {
-        fontSize: 30,
+        fontSize: moderateScale(30),
         color: 'white',
         fontWeight: '900',
-        marginTop: 32,
-        marginLeft: 30
+        marginTop: verticalScale(32),
+        marginLeft: horizontalScale(30)
     },
     title1: {
-        fontSize: 25,
+        fontSize: moderateScale(25),
         color: 'white',
-        marginLeft: 22,
-        marginTop: 30,
+        marginLeft: horizontalScale(22),
+        marginTop: verticalScale(30),
         fontFamily: 'Poppins-Bold',
     },
     iconback: {
@@ -446,133 +448,133 @@ const styles = StyleSheet.create({
     },
     inputGroup: {
         width: '100%',
-        marginBottom: 8,
+        marginBottom: verticalScale(8),
     },
     inputWrapper: {
         backgroundColor: 'white',
-        borderRadius: 15,
+        borderRadius: moderateScale(15),
         borderWidth: 1,
         borderColor: '#e0e0e0',
-        padding: 10,
+        padding: responsiveSpacing(9),
     },
     inputLabel: {
         color: '#0a1172',
-        fontSize: 16,
-        marginBottom: 5,
-        marginLeft: 20,
+        fontSize: moderateScale(16),
+        marginBottom: verticalScale(5),
+        marginLeft: horizontalScale(20),
         fontFamily: 'Poppins-Bold',
     },
     input: {
         padding: 0,
-        fontSize: 14,
+        fontSize: moderateScale(14),
         color: "#0a1172",
-        marginLeft: 20,
+        marginLeft: horizontalScale(20),
         fontFamily: 'Poppins-Regular',
     },
     pickerContainer: {
-        marginLeft: 20,
-        marginRight: 20,
+        marginLeft: horizontalScale(20),
+        marginRight: horizontalScale(20),
         color: 'white'
     },
     picker: {
         color: '#0a1172',
-        marginLeft: -8,
-        marginTop: -15,
-        height: 50,
+        marginLeft: horizontalScale(-8),
+        marginTop: verticalScale(-15),
+        height: verticalScale(50),
         placeholder: 'Select',
     },
     pickerItem: {
-        fontSize: 16,
+        fontSize: moderateScale(16),
     },
     errorText: {
         color: 'red',
-        marginBottom: -11,
+        marginBottom: verticalScale(-11),
         textAlign: 'center',
+        fontSize: moderateScale(14),
     },
     successText: {
         color: 'green',
-        fontSize: 16,
-        marginBottom: -11,
+        fontSize: moderateScale(16),
+        marginBottom: verticalScale(-11),
         textAlign: 'center',
     },
     loanButton: {
         backgroundColor: '#0a1172',
-        padding: 15,
-        borderRadius: 12,
+        padding: responsiveSpacing(14),
+        borderRadius: moderateScale(12),
         alignItems: 'center',
-        marginTop: 50,
-        marginBottom: 1,
-        width:'100%'
-    
+        marginTop: verticalScale(50),
+        marginBottom: verticalScale(1),
+        width: '100%'
     },
     ButtonText: {
         color: 'white',
-        fontSize: 18,
+        fontSize: moderateScale(18),
         fontWeight: '600',
     },
     uploadDocuments1: {
         backgroundColor: '#ECEDFF',
         minHeight: '100%',
         width: '100%',
-        borderTopLeftRadius: 25,
-        borderTopRightRadius: 25,
-        padding: 30,
+        borderTopLeftRadius: moderateScale(25),
+        borderTopRightRadius: moderateScale(25),
+        padding: responsiveSpacing(30),
         alignItems: 'center',
     },
     UP: {
         fontFamily: 'Poppins-Regular',
-        marginLeft: 10,
-        marginTop: 5,
-        fontSize: 16,
+        marginLeft: horizontalScale(10),
+        marginTop: verticalScale(5),
+        fontSize: moderateScale(16),
         color: '#0a1172'
     },
     previewImage: {
         width: '100%',
-        height: 200,
-        marginTop: 10,
-        borderRadius: 8,
+        height: verticalScale(200),
+        marginTop: verticalScale(10),
+        borderRadius: moderateScale(8),
         resizeMode: 'cover',
     },
     pdfPreview: {
         backgroundColor: '#f5f5f5',
-        padding: 20,
-        borderRadius: 8,
+        padding: responsiveSpacing(20),
+        borderRadius: moderateScale(8),
         alignItems: 'center',
         justifyContent: 'center',
     },
     fileName: {
-        marginTop: 10,
+        marginTop: verticalScale(10),
         color: '#0a1172',
-        fontSize: 14,
+        fontSize: moderateScale(14),
         textAlign: 'center',
         fontFamily: 'Poppins-Regular',
     },
     pan: {
         flexDirection: 'row',
-        marginLeft: 15
+        marginLeft: horizontalScale(15)
     },
     bottomNav: {
         flexDirection: 'row',
         justifyContent: 'space-around',
-        padding: 10,
+        padding: responsiveSpacing(10),
         backgroundColor: 'white',
-        borderTopLeftRadius: 20,
-        borderTopRightRadius: 20,
+        borderTopLeftRadius: moderateScale(20),
+        borderTopRightRadius: moderateScale(20),
         shadowColor: '#000',
         shadowOpacity: 0.1,
-        shadowRadius: 10,
+        shadowRadius: moderateScale(10),
         elevation: 5,
-        marginHorizontal: 20,
-        marginBottom: 10,
-        borderRadius: 10
+        marginHorizontal: horizontalScale(20),
+        marginBottom: verticalScale(10),
+        borderRadius: moderateScale(10)
     },
     navItem: {
-        padding: 10
+        padding: responsiveSpacing(10)
     },
     activeNavItem: {
         backgroundColor: '#C6EAFF',
-        borderRadius: 20,
-        padding: 10
+        borderRadius: moderateScale(20),
+        padding: responsiveSpacing(10)
     },
 });
 

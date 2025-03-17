@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, ScrollView, StyleSheet } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, ScrollView, StyleSheet, Alert } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
 import Ionicons from "react-native-vector-icons/Ionicons";
@@ -7,17 +7,59 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import FontAwesome from 'react-native-vector-icons/FontAwesome';
 import { useNavigation } from '@react-navigation/native';
 import Svg, { Circle, Path, Text as SvgText, G, Rect } from "react-native-svg";
+import { horizontalScale, verticalScale, moderateScale, responsiveSpacing } from '../utils/responsive';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import axios from 'axios';
+import config from '../config';
 
 const PaymentProcessScreen = () => {
   const navigation = useNavigation();
-  const [activeTab, setActiveTab] = useState('home');
+  const [activeTab, setActiveTab] = useState('documents');
   const [activeStep, setActiveStep] = useState(null);
+  const [userData, setUserData] = useState(null);
+  const [greeting, setGreeting] = useState('');
+
+  useEffect(() => {
+    fetchUserData();
+    determineGreeting();
+  }, []);
+
+  const determineGreeting = () => {
+    const currentHour = new Date().getHours();
+    if (currentHour < 12) {
+      setGreeting('Good Morning');
+    } else if (currentHour < 18) {
+      setGreeting('Good Afternoon');
+    } else {
+      setGreeting('Good Evening');
+    }
+  };
+
+  const fetchUserData = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      if (!token) {
+        console.error('No token found');
+        return;
+      }
+
+      const response = await axios.get(`${config.getApiUrl()}/user`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setUserData(response.data);
+    } catch (error) {
+      console.error('Error fetching user data:', error);
+      Alert.alert('Error', 'Failed to fetch user data.');
+    }
+  };
 
   const handleStepClick = (step) => {
     if (activeStep === step) {
-      setActiveStep(null); // Close the card if clicking the same step again
+      setActiveStep(null);
     } else {
-      setActiveStep(step); // Show the card for the clicked step
+      setActiveStep(step);
     }
   };
 
@@ -86,8 +128,8 @@ const PaymentProcessScreen = () => {
       <LinearGradient colors={['#003F7D', '#00AEEF']} style={styles.header}>
         <View style={styles.headerContent}>
           <Ionicons name="person-circle-outline" size={45} color="white" />
-          <Text style={styles.headerText}>Hello ! User Name</Text>
-          <MaterialCommunityIcons name="menu" size={24} color="white" />
+          <Text style={styles.headerText}>Hello ! {userData ? userData.name : 'Loading...'}</Text>
+          <MaterialCommunityIcons name="menu" size={24} color="white" style={styles.menuIcon}/>
         </View>
       </LinearGradient>
 
@@ -237,76 +279,83 @@ const styles = StyleSheet.create({
     backgroundColor: '#ECEDFF',
   },
   header: {
-    padding: 20,
-    paddingTop: 50,
-    borderBottomLeftRadius: 10,
-    borderBottomRightRadius: 10,
+    padding: responsiveSpacing(20),
+    paddingTop: verticalScale(50),
+    borderBottomLeftRadius: moderateScale(10),
+    borderBottomRightRadius: moderateScale(10),
   },
   headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginTop: 30
+      flexDirection: 'row',
+      marginHorizontal: horizontalScale(2),
+      alignItems: 'center',
+    marginTop: verticalScale(30)
   },
   headerText: {
     color: 'white',
-    fontSize: 19,
-    marginLeft: -150
+    fontSize: moderateScale(18),
+    marginLeft: horizontalScale(10),
+    
+  },
+  menuIcon: {
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+    marginLeft: 'auto',
+    
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 20
+    paddingBottom: verticalScale(20)
   },
   sectionTitle: {
-    marginLeft: 15,
-    fontSize: 18,
+    marginLeft: horizontalScale(15),
+    fontSize: moderateScale(18),
     fontWeight: '900',
     color: "#001F5C",
-    marginTop: 20,
-    marginBottom: 10
+    marginTop: verticalScale(20),
+    marginBottom: verticalScale(10)
   },
   diagramContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginVertical: 20,
+    marginVertical: verticalScale(20),
     width: '100%',
-    height: 350
+    height: verticalScale(350)
   },
   
   // Step 1 Styles - Scan & Pay
   stepCard1: {
     backgroundColor: 'white',
-    margin: 20,
-    borderRadius: 15,
-    padding: 20,
-    height:400,
+    margin: responsiveSpacing(20),
+    borderRadius: moderateScale(15),
+    padding: responsiveSpacing(20),
+    height: verticalScale(400),
     alignItems: 'center',
   },
   stepNumber1: {
-    fontSize: 70,
-    marginTop:10,
+    fontSize: moderateScale(70),
+    marginTop: verticalScale(10),
     fontWeight: 'bold',
     color: '#001F5C', 
-    marginBottom: 5,
+    marginBottom: verticalScale(5),
   },
   stepTitle1: {
-    fontSize: 26,
-    marginTop:14,
+    fontSize: moderateScale(26),
+    marginTop: verticalScale(14),
     fontFamily: 'Poppins-Bold',
     color: '#001F5C',
-    marginBottom: 35,
+    marginBottom: verticalScale(35),
   },
   contentContainer1: {
     width: '100%',
     alignItems: 'center',
   },
   contentText1: {
-    fontSize: 19,
+    fontSize: moderateScale(19),
     color: '#001F5C',
     textAlign: 'center',
   },
   companyName1: {
-    fontSize: 19,
+    fontSize: moderateScale(19),
     fontWeight: 'bold',
     color: '#001F5C',
     textAlign: 'center',
@@ -314,25 +363,25 @@ const styles = StyleSheet.create({
   bottomNav: {
     flexDirection: 'row',
     justifyContent: 'space-around',
-    padding: 10,
+    padding: responsiveSpacing(10),
     backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderTopLeftRadius: moderateScale(20),
+    borderTopRightRadius: moderateScale(20),
     shadowColor: '#000',
     shadowOpacity: 0.1,
-    shadowRadius: 10,
+    shadowRadius: moderateScale(10),
     elevation: 5,
-    marginHorizontal: 20,
-    marginBottom: 10,
-    borderRadius: 10
+    marginHorizontal: horizontalScale(20),
+    marginBottom: verticalScale(10),
+    borderRadius: moderateScale(10)
   },
   navItem: {
-    padding: 10
+    padding: responsiveSpacing(10)
   },
   activeNavItem: {
     backgroundColor: '#C6EAFF',
-    borderRadius: 20,
-    padding: 10
+    borderRadius: moderateScale(20),
+    padding: responsiveSpacing(10)
   },
   container3: {
     flex: 1,
@@ -341,41 +390,43 @@ const styles = StyleSheet.create({
   },
   helpBox: {
     backgroundColor: 'white',
-    padding: 15,
-    marginLeft: 20,
-    marginRight: 20,
-    borderRadius: 15,
-    marginBottom: 30,
+    padding: responsiveSpacing(15),
+    marginLeft: horizontalScale(20),
+    marginRight: horizontalScale(20),
+    borderRadius: moderateScale(15),
+    marginBottom: verticalScale(30),
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: verticalScale(2) },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowRadius: moderateScale(4),
     elevation: 3,
   },
   helpText: {
     color: "#0a1172",
     fontFamily: 'Poppins-Bold',
-    fontSize: 19,
+    fontSize: moderateScale(19),
     textAlign: 'center',
   },
   button: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#001F6D',
-    paddingVertical: 15,
-    paddingHorizontal: 60,
-    borderRadius: 15,
+    paddingVertical: verticalScale(12),
+    paddingHorizontal: horizontalScale(60),
+    borderRadius: moderateScale(15),
     shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
+    shadowOffset: { width: 0, height: verticalScale(2) },
     shadowOpacity: 0.2,
-    shadowRadius: 4,
+    shadowRadius: moderateScale(4),
     elevation: 5,
+    width: horizontalScale(350), // Added responsive width
+    alignSelf: 'center', // Center the button horizontally
   },
   buttonText: {
     color: 'white',
-    fontSize: 25,
+    fontSize: moderateScale(25),
     fontWeight: 'bold',
-    marginLeft: 8,
+    marginLeft: horizontalScale(4),
   }
 });
 

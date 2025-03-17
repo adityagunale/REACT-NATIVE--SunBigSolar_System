@@ -6,11 +6,13 @@ import {
   StyleSheet, 
   TouchableOpacity,
   ScrollView,
+  ActivityIndicator
 } from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 import { useNavigation } from '@react-navigation/native';
 import axios from "axios";
 import config from '../config';
+import { horizontalScale, verticalScale, moderateScale, responsiveSpacing } from '../utils/responsive';
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
@@ -20,6 +22,7 @@ const RegisterScreen = () => {
   const [password, setPassword] = useState("");
   const [tele, setTele] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const validateEmail = (email) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -27,7 +30,7 @@ const RegisterScreen = () => {
   };
 
   const validatePhoneNumber = (phone) => {
-    const phoneRegex = /^[0-9]{10}$/; // Adjust regex for your phone number format
+    const phoneRegex = /^[0-9]{10}$/;
     return phoneRegex.test(phone);
   };
 
@@ -36,45 +39,43 @@ const RegisterScreen = () => {
     return passwordRegex.test(password);
   };
 
-  const handleRegister = () => {
-    setErrorMessage(""); // Clear previous error messages
+  const handleRegister = async () => {
+    setErrorMessage("");
+    setIsLoading(true);
 
-    if (!name || !email || !password || !tele) {
-      setErrorMessage("All fields are required.");
-      return;
+    try {
+      if (!name || !email || !password || !tele) {
+        throw new Error("All fields are required.");
+      }
+
+      if (!validateEmail(email)) {
+        throw new Error("Please enter a valid email address.");
+      }
+
+      if (!validatePhoneNumber(tele)) {
+        throw new Error("Please enter a valid phone number.");
+      }
+
+      if (!validatePassword(password)) {
+        throw new Error("Password must be at least 8 characters long and include at least one number, one uppercase letter, and one lowercase letter.");
+      }
+
+      const user = {
+        name: name.trim(),
+        email: email.trim(),
+        tele: tele.trim(),
+        password: password,
+      };
+
+      const response = await axios.post(`${config.getApiUrl()}/register`, user);
+      console.log(response);
+      navigation.navigate("Login");
+    } catch (error) {
+      setErrorMessage(error.message || "An error occurred during registration.");
+      console.log("Registration Error", error);
+    } finally {
+      setIsLoading(false);
     }
-
-    if (!validateEmail(email)) {
-      setErrorMessage("Please enter a valid email address.");
-      return;
-    }
-
-    if (!validatePhoneNumber(tele)) {
-      setErrorMessage("Please enter a valid phone number.");
-      return;
-    }
-
-    if (!validatePassword(password)) {
-      setErrorMessage("Password must be at least 8 characters long and include at least one number, one uppercase letter, and one lowercase letter.");
-      return;
-    }
-
-    const user = {
-      name: name.trim(),
-      email: email.trim(),
-      tele: tele.trim(),
-      password: password,
-    };
-
-    axios.post(`${config.getApiUrl()}/register`, user)
-      .then((response) => {
-        console.log(response);
-        navigation.navigate("Login"); // Navigate to Login screen after successful registration
-      })
-      .catch((error) => {
-        setErrorMessage("An error occurred during registration.");
-        console.log("Registration Error", error);
-      });
   };
 
   const handleLogin = () => {
@@ -88,7 +89,7 @@ const RegisterScreen = () => {
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
     >
-      <ScrollView 
+      <ScrollView
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
       >
@@ -103,6 +104,7 @@ const RegisterScreen = () => {
                 placeholder="Enter Name"
                 value={name}
                 onChangeText={setName}
+                editable={!isLoading}
               />
             </View>
           </View>
@@ -117,6 +119,7 @@ const RegisterScreen = () => {
                 onChangeText={setEmail}
                 keyboardType="email-address"
                 autoCapitalize="none"
+                editable={!isLoading}
               />
             </View>
           </View>
@@ -130,6 +133,7 @@ const RegisterScreen = () => {
                 value={tele}
                 onChangeText={setTele}
                 keyboardType="phone-pad"
+                editable={!isLoading}
               />
             </View>
           </View>
@@ -143,6 +147,7 @@ const RegisterScreen = () => {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry
+                editable={!isLoading}
               />
             </View>
           </View>
@@ -151,15 +156,29 @@ const RegisterScreen = () => {
             <Text style={styles.errorText}>{errorMessage}</Text>
           ) : null}
 
-          <TouchableOpacity style={styles.button} onPress={handleRegister}>
-            <Text style={styles.buttonText}>Sign Up</Text>
+          <TouchableOpacity 
+            style={[styles.button, isLoading && styles.buttonDisabled]}
+            onPress={handleRegister}
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <ActivityIndicator color="white" size="small" />
+            ) : (
+              <Text style={styles.buttonText}>Sign Up</Text>
+            )}
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.signupPrompt} onPress={handleLogin}>
-            <Text style={styles.signupText}>
-              Already registered? <Text style={styles.signupLink}>Log In</Text>
-            </Text>
-          </TouchableOpacity>
+          <View style={styles.bottomContainer}>
+            <TouchableOpacity 
+              style={styles.signupPrompt} 
+              onPress={handleLogin}
+              disabled={isLoading}
+            >
+              <Text style={[styles.signupText, isLoading && styles.textDisabled]}>
+                Already registered? <Text style={styles.signupLink}>Log In</Text>
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
     </LinearGradient>
@@ -173,76 +192,101 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    marginBottom:60
   },
   white: {
     backgroundColor: '#ECEDFF',
-    height: '90%',
+    flex: 1,
     width: '100%',
     marginTop: '30%',
-    borderTopLeftRadius: 100,
-    padding: 30,
+    borderTopLeftRadius: moderateScale(100),
+    padding: responsiveSpacing(15),
     alignItems: 'center',
-    justifyContent: 'flex-start',
-    paddingTop: 40,
   },
   title: {
     color: '#0a1172',
-    fontSize: 28,
-    marginTop: 70,
-    marginBottom: 60,
+    fontSize: moderateScale(28),
+    marginTop: verticalScale(20),
+    marginBottom: verticalScale(30),
     fontWeight: 'bold',
+    textAlign: 'center'
   },
   inputGroup: {
-    width: '100%',
-    marginBottom: 20,
+    width: '92%',
+    marginBottom: verticalScale(20),
   },
   inputWrapper: {
     backgroundColor: 'white',
-    borderRadius: 15,
+    borderRadius: moderateScale(15),
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    padding: 15,
+    padding: responsiveSpacing(10),
+    minHeight: verticalScale(65),
   },
   inputLabel: {
     color: '#0a1172',
-    fontSize: 18,
+    fontSize: moderateScale(18),
     fontWeight: '900',
-    marginBottom: 5,
+    marginBottom: verticalScale(5),
+    marginLeft: responsiveSpacing(15),
   },
   input: {
     padding: 0,
-    fontSize: 15
+    fontSize: moderateScale(17),
+    height: verticalScale(25),
+    color: '#0a1172',
+    marginLeft: responsiveSpacing(15),
   },
   errorText: {
     color: 'red',
-    marginBottom: 20,
+    marginBottom: verticalScale(15),
     textAlign: 'center',
+    fontSize: moderateScale(14),
+    width: '100%',
+    paddingHorizontal: horizontalScale(20)
   },
   button: {
-    width: '100%',
-    padding: 15,
+    width: '92%',
     backgroundColor: '#0a1172',
-    borderRadius: 12,
+    padding: responsiveSpacing(15),
+    borderRadius: moderateScale(12),
     alignItems: 'center',
-    marginTop: 20,
+    marginTop: verticalScale(20),
+    minHeight: verticalScale(50),
+    justifyContent: 'center'
   },
   buttonText: {
     color: 'white',
-    fontSize: 16,
+    fontSize: moderateScale(18),
     fontWeight: '600',
+    textAlign: 'center'
+  },
+  bottomContainer: {
+    width: '100%',
+    marginTop: 'auto',
+    paddingBottom: verticalScale(20),
   },
   signupPrompt: {
-    marginTop: 80,
+    width: '100%',
+    alignItems: 'center',
+    paddingVertical: verticalScale(10),
   },
   signupText: {
     color: 'black',
-    fontSize: 16,
+    fontSize: moderateScale(18),
+    textAlign: 'center'
   },
   signupLink: {
     color: '#0a1172',
     fontWeight: '500',
+    fontSize: moderateScale(16)
   },
+  buttonDisabled: {
+    opacity: 0.7,
+    backgroundColor: '#0a1172',
+  },
+  textDisabled: {
+    opacity: 0.7,
+  }
 });
 
 export default RegisterScreen;
